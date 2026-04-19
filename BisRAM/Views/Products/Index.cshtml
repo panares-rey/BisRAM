@@ -1,0 +1,161 @@
+﻿@model BisRAM.Models.ProductSearchViewModel
+@{
+    ViewBag.Title = "Shop";
+}
+
+<div class="shop-layout container">
+    <aside class="shop-sidebar">
+        <div class="filter-box">
+            <h3><i class="fas fa-filter"></i> Filters</h3>
+            <form method="get" id="filterForm">
+                <input type="hidden" name="query" value="@Model.Query" />
+
+                <div class="filter-section">
+                    <label>Category</label>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <label class="check-label">
+                            <input type="radio" name="category" value="@cat" @(Model.Category == cat ? "checked" : "") onchange="this.form.submit()"/>
+                            @cat
+                        </label>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Category))
+                    {
+                        <label class="check-label">
+                            <input type="radio" name="category" value="" onchange="this.form.submit()"/> All Categories
+                        </label>
+                    }
+                </div>
+
+                <div class="filter-section">
+                    <label>Brand</label>
+                    @foreach (var brand in Model.Brands)
+                    {
+                        <label class="check-label">
+                            <input type="radio" name="brand" value="@brand" @(Model.Brand == brand ? "checked" : "") onchange="this.form.submit()"/>
+                            @brand
+                        </label>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Brand))
+                    {
+                        <label class="check-label">
+                            <input type="radio" name="brand" value="" onchange="this.form.submit()"/> All Brands
+                        </label>
+                    }
+                </div>
+
+                <div class="filter-section">
+                    <label>Price Range</label>
+                    <div class="price-inputs">
+                        <input type="number" name="minPrice" placeholder="Min ₱" value="@Model.MinPrice" />
+                        <span>-</span>
+                        <input type="number" name="maxPrice" placeholder="Max ₱" value="@Model.MaxPrice" />
+                    </div>
+                    <button type="submit" class="btn-filter">Apply</button>
+                    <a href="/Products" class="btn-clear">Clear All</a>
+                </div>
+            </form>
+        </div>
+    </aside>
+
+    <div class="shop-main">
+        <div class="shop-toolbar">
+            <p>@Model.Products.Count product(s) found
+                @if (!string.IsNullOrEmpty(Model.Query)) { <span> for "@Model.Query"</span> }
+                @if (!string.IsNullOrEmpty(Model.Category)) { <span> in @Model.Category</span> }
+            </p>
+            <form method="get" id="sortForm">
+                <input type="hidden" name="query" value="@Model.Query" />
+                <input type="hidden" name="category" value="@Model.Category" />
+                <input type="hidden" name="brand" value="@Model.Brand" />
+                <input type="hidden" name="minPrice" value="@Model.MinPrice" />
+                <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
+                <select name="sortBy" onchange="this.form.submit()">
+                    <option value="name" selected="@(Model.SortBy == "name" ? "selected" : null)">Name A-Z</option>
+                    <option value="price_asc" selected="@(Model.SortBy == "price_asc" ? "selected" : null)">Price: Low to High</option>
+                    <option value="price_desc" selected="@(Model.SortBy == "price_desc" ? "selected" : null)">Price: High to Low</option>
+                    <option value="newest" selected="@(Model.SortBy == "newest" ? "selected" : null)">Newest First</option>
+                </select>
+            </form>
+        </div>
+
+        @if (!Model.Products.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-search-minus"></i>
+                <h3>No products found</h3>
+                <p>Try adjusting your filters or <a href="/Products">browse all products</a>.</p>
+            </div>
+        }
+        else
+        {
+            <div class="product-grid">
+                @foreach (var p in Model.Products)
+                {
+                    <div class="product-card">
+                        <a href="/Products/Details/@p.Id" class="product-img-link">
+                            <div class="product-img-wrap">
+                                @if (!string.IsNullOrEmpty(p.ImageUrl) && p.ImageUrl != "/images/products/default.jpg")
+                                {
+                                    <img src="@p.ImageUrl" alt="@p.Name" class="product-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                    <div class="product-img-fallback" style="display:none"><i class="fas fa-microchip product-placeholder-icon"></i></div>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-microchip product-placeholder-icon"></i>
+                                }
+                                @if (p.Stock == 0)
+                                {
+                                    <span class="badge-oos">Out of Stock</span>
+                                }
+                            </div>
+                        </a>
+                        <div class="product-info">
+                            <span class="product-cat">@p.Category</span>
+                            <a href="/Products/Details/@p.Id"><h3>@p.Name</h3></a>
+                            <p class="product-brand">@p.Brand</p>
+                            <div class="product-footer">
+                                <span class="price">₱@p.Price.ToString("N2")</span>
+                                @if (p.Stock > 0)
+                                {
+                                    <button class="btn-add-cart" onclick="addToCart(@p.Id, this)">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                }
+                            </div>
+                            <p class="stock-info">@(p.Stock > 0 ? $"{p.Stock} in stock" : "Unavailable")</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+function addToCart(productId, btn) {
+    btn.disabled = true;
+    fetch('/Cart/AddToCart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `productId=${productId}&quantity=1`
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            document.getElementById('cartCount').textContent = d.cartCount;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.classList.add('added');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-cart-plus"></i>';
+                btn.classList.remove('added');
+                btn.disabled = false;
+            }, 1500);
+        } else {
+            alert(d.message);
+            btn.disabled = false;
+        }
+    });
+}
+</script>
+    

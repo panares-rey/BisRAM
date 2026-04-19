@@ -1,0 +1,52 @@
+@model List<BisRAM.Models.Message>
+@{ ViewBag.Title = "Chat"; var other = ViewBag.OtherUser as BisRAM.Models.User; var listing = ViewBag.Listing as BisRAM.Models.Listing; int myId = Context.Session.GetInt32("UserId") ?? 0; }
+<div class="chat-page">
+    <div class="chat-header animate-down">
+        <a href="/Messages" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+        <img src="@(other?.AvatarUrl ?? "/images/avatars/default.svg")" class="chat-avatar" onerror="this.src='/images/avatars/default.svg'" />
+        <div>
+            <strong>@other?.FullName</strong>
+            @if (listing != null) { <p class="chat-listing-ref"><i class="fas fa-tag"></i> Re: @listing.Title — ₱@listing.Price.ToString("N2")</p> }
+        </div>
+    </div>
+
+    @if (listing != null)
+    {
+        <div class="listing-banner animate-down">
+            <i class="fas fa-box"></i>
+            <div><strong>@listing.Title</strong><span>₱@listing.Price.ToString("N2") • @listing.Condition</span></div>
+            <a href="/Marketplace/Details/@listing.Id" class="btn-sm btn-edit">View</a>
+            <a href="/Cart" class="btn-sm btn-primary-sm">Buy Now</a>
+        </div>
+    }
+
+    <div class="chat-messages" id="chatMessages">
+        @if (!Model.Any())
+        {
+            <div class="chat-empty"><i class="fas fa-comment-dots"></i><p>Start the conversation!</p></div>
+        }
+        @foreach (var m in Model)
+        {
+            var isMe = m.SenderId == myId;
+            <div class="msg-bubble-wrap @(isMe?"me":"them") animate-up">
+                @if (!isMe) { <img src="@(other?.AvatarUrl ?? "/images/avatars/default.svg")" class="msg-avatar" onerror="this.src='/images/avatars/default.svg'" /> }
+                <div class="msg-bubble @(isMe?"bubble-me":"bubble-them")">
+                    <p>@m.Content</p>
+                    <span class="msg-time">@m.SentAt.ToString("MMM dd, hh:mm tt")</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <form asp-action="Send" method="post" class="chat-input-bar animate-up">
+        <input type="hidden" name="receiverId" value="@other?.Id" />
+        <input type="hidden" name="listingId" value="@ViewBag.ListingId" />
+        <input type="text" name="content" id="msgInput" placeholder="Type a message..." autocomplete="off" required />
+        <button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i></button>
+    </form>
+</div>
+<script>
+var el = document.getElementById('chatMessages');
+if (el) el.scrollTop = el.scrollHeight;
+document.getElementById('msgInput').focus();
+</script>

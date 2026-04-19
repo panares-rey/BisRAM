@@ -1,0 +1,51 @@
+@model BisRAM.Models.Order
+@{ ViewBag.Title = "Order Confirmed"; }
+<div class="container" style="padding:48px 24px">
+    <div class="confirmation-box animate-up">
+        <div class="confirm-icon"><i class="fas fa-check-circle"></i></div>
+        <h2>Order Placed Successfully!</h2>
+        <p class="confirm-sub">Thank you! We'll process your order right away.</p>
+        <div class="confirm-details">
+            <div class="confirm-row"><span>Order #</span><strong>@Model.Id</strong></div>
+            <div class="confirm-row"><span>Date</span><strong>@Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</strong></div>
+            <div class="confirm-row"><span>Payment</span><strong>@Model.PaymentMethod</strong></div>
+            @if (!string.IsNullOrEmpty(Model.PaymentReference))
+            {
+                <div class="confirm-row"><span>Reference #</span><strong>@Model.PaymentReference</strong></div>
+            }
+            <div class="confirm-row"><span>Status</span><strong><span class="status-badge pending">@Model.Status</span></strong></div>
+            <div class="confirm-row"><span>Deliver to</span><strong>@Model.FullName — @Model.Address</strong></div>
+            @if (Model.EstimatedDelivery.HasValue)
+            {
+                var days = (int)(Model.EstimatedDelivery.Value - Model.CreatedAt).TotalDays;
+                <div class="confirm-row delivery-row">
+                    <span>Est. Delivery</span>
+                    <strong><i class="fas fa-truck"></i> @Model.EstimatedDelivery.Value.ToString("MMMM dd, yyyy") (@days days)</strong>
+                </div>
+            }
+        </div>
+        <div class="order-timeline" style="margin:24px 0">
+            @{ var steps = new[]{"Pending","Processing","Shipped","Delivered"}; }
+            @for(int i=0;i<steps.Length;i++)
+            {
+                <div class="tl-step @(steps[i]=="Pending"?"active":"")">
+                    <div class="tl-dot"><i class="fas @(steps[i]=="Pending"?"fa-circle":"fa-circle")"></i></div>
+                    <span>@steps[i]</span>
+                </div>
+                if(i<steps.Length-1){<div class="tl-line"></div>}
+            }
+        </div>
+        <div class="confirm-items">
+            <h4>Items Ordered</h4>
+            @foreach (var item in Model.Items)
+            {
+                <div class="confirm-item"><span>@item.ProductName x@item.Quantity</span><span>₱@((item.Price*item.Quantity).ToString("N2"))</span></div>
+            }
+            <div class="confirm-total"><span>Total</span><span>₱@Model.Total.ToString("N2")</span></div>
+        </div>
+        <div class="confirm-actions">
+            <a href="/Account/Profile#my-orders" class="btn-primary"><i class="fas fa-box"></i> Track Order</a>
+            <a href="/Products" class="btn-outline"><i class="fas fa-store"></i> Continue Shopping</a>
+        </div>
+    </div>
+</div>

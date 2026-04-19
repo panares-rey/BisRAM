@@ -1,0 +1,35 @@
+@model List<BisRAM.Models.Listing>
+@{ ViewBag.Title = "Marketplace Listings"; }
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+    <div class="admin-main">
+        <div class="admin-header animate-down"><h2><i class="fas fa-handshake"></i> Marketplace Listings</h2></div>
+        @if(TempData["Success"]!=null){<div class="flash flash-success">@TempData["Success"]</div>}
+        <div class="admin-panel animate-up">
+            <table class="admin-table full">
+                <thead><tr><th>#</th><th>Title</th><th>Seller</th><th>Category</th><th>Condition</th><th>Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                @foreach (var l in Model)
+                {
+                    <tr>
+                        <td>@l.Id</td>
+                        <td><strong>@l.Title</strong></td>
+                        <td>@l.SellerName</td>
+                        <td>@l.Category</td>
+                        <td>@l.Condition</td>
+                        <td>&#8369;@l.Price.ToString("N2")</td>
+                        <td>@l.Stock</td>
+                        <td><span class="status-badge @l.Status.ToLower()">@l.Status</span></td>
+                        <td>
+                            <form method="post" action="/Admin/RemoveListing" onsubmit="return confirm('Remove this listing?')" style="display:inline">
+                                <input type="hidden" name="id" value="@l.Id" />
+                                <button type="submit" class="btn-sm btn-danger"><i class="fas fa-trash"></i> Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

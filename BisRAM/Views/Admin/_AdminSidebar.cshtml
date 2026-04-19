@@ -1,0 +1,17 @@
+@{
+    var current = ViewContext.RouteData.Values["action"]?.ToString();
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+<aside class="admin-sidebar">
+    <div class="admin-brand"><i class="fas fa-microchip"></i><span>BisRAM Admin</span></div>
+    <nav class="admin-nav">
+        <a href="/Admin/Dashboard" class="@(current=="Dashboard"?"active":"")"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="/Admin/Products" class="@(current=="Products"&&controller=="Admin"?"active":"")"><i class="fas fa-box"></i> Products</a>
+        <a href="/Admin/Orders" class="@(current=="Orders"?"active":"")"><i class="fas fa-shopping-bag"></i> Orders</a>
+        <a href="/Admin/Users" class="@(current=="Users"?"active":"")"><i class="fas fa-users"></i> Customers</a>
+        <a href="/Admin/Listings" class="@(current=="Listings"?"active":"")"><i class="fas fa-handshake"></i> Listings</a>
+        <hr />
+        <a href="/"><i class="fas fa-store"></i> View Store</a>
+        <a href="/Account/Logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </nav>
+</aside>

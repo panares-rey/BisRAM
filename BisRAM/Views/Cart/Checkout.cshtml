@@ -1,0 +1,137 @@
+@model BisRAM.Models.CheckoutViewModel
+@{ ViewBag.Title = "Checkout"; }
+<div class="container" style="padding:32px 24px">
+    <h2 class="page-title animate-up"><i class="fas fa-lock"></i> Checkout</h2>
+    <div class="checkout-layout">
+        <div class="checkout-form animate-left">
+            <form asp-action="PlaceOrder" method="post" id="checkoutForm">
+                <div class="form-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> Shipping Information</h3>
+                    <div class="form-row-2">
+                        <div class="form-group"><label>Full Name *</label><input type="text" name="FullName" value="@Model.FullName" required /></div>
+                        <div class="form-group"><label>Phone *</label><input type="text" name="Phone" value="@Model.Phone" required /></div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label>Region *</label>
+                            <select name="Region" required onchange="updateDelivery(this.value)">
+                                @foreach(var r in new[]{"NCR - National Capital Region","Region I - Ilocos Region","Region II - Cagayan Valley","Region III - Central Luzon","Region IV-A - CALABARZON","Region IV-B - MIMAROPA","Region V - Bicol Region","Region VI - Western Visayas","Region VII - Central Visayas","Region VIII - Eastern Visayas","Region IX - Zamboanga Peninsula","Region X - Northern Mindanao","Region XI - Davao Region","Region XII - SOCCSKSARGEN","Region XIII - Caraga","BARMM","CAR - Cordillera"})
+                                {
+                                    if(Model.Region==r){<option value="@r" selected>@r</option>}else{<option value="@r">@r</option>}
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Province</label><input type="text" name="Province" value="@Model.Province" /></div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group"><label>City / Municipality</label><input type="text" name="City" value="@Model.City" /></div>
+                        <div class="form-group"><label>Barangay</label><input type="text" name="Barangay" value="@Model.Barangay" /></div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group"><label>ZIP Code</label><input type="text" name="ZipCode" value="@Model.ZipCode" maxlength="4" /></div>
+                        <div class="form-group"><label>Street / House No.</label><input type="text" name="StreetAddress" value="@Model.StreetAddress" /></div>
+                    </div>
+                    <div class="delivery-estimate" id="deliveryEst">
+                        <i class="fas fa-truck"></i> Estimated delivery: <strong id="estDays">3-5 business days</strong>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3><i class="fas fa-credit-card"></i> Payment Method</h3>
+                    <div class="payment-options">
+                        <label class="payment-option">
+                            <input type="radio" name="PaymentMethod" value="Cash on Delivery" checked onchange="showPaymentPanel('cod')" />
+                            <div class="payment-card"><i class="fas fa-money-bill-wave"></i><span>Cash on Delivery</span></div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="PaymentMethod" value="GCash" onchange="showPaymentPanel('gcash')" />
+                            <div class="payment-card gcash-card"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/GCash_logo.svg/200px-GCash_logo.svg.png" style="height:28px;object-fit:contain" onerror="this.style.display='none'" /><span>GCash</span></div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="PaymentMethod" value="Maya" onchange="showPaymentPanel('maya')" />
+                            <div class="payment-card maya-card"><i class="fas fa-mobile-alt" style="color:#00c2a8"></i><span>Maya</span></div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="PaymentMethod" value="Bank Transfer" onchange="showPaymentPanel('bank')" />
+                            <div class="payment-card"><i class="fas fa-university"></i><span>Bank Transfer</span></div>
+                        </label>
+                    </div>
+
+                    <div id="panel-cod" class="payment-panel active">
+                        <div class="payment-info-box"><i class="fas fa-info-circle"></i> Pay cash when your order arrives at your door. Make sure you have the exact amount ready.</div>
+                    </div>
+                    <div id="panel-gcash" class="payment-panel">
+                        <div class="payment-info-box gcash-box">
+                            <h4><i class="fas fa-mobile-alt"></i> GCash Payment Instructions</h4>
+                            <p>1. Open your GCash app</p>
+                            <p>2. Send <strong>₱@Model.Total.ToString("N2")</strong> to: <strong>0917-123-4567</strong></p>
+                            <p>3. Account Name: <strong>BisRAM Store</strong></p>
+                            <p>4. Enter your GCash reference number below:</p>
+                            <div class="form-group" style="margin-top:8px">
+                                <input type="text" name="PaymentReference" placeholder="GCash Reference No. (e.g. 1234567890)" id="gcashRef" />
+                            </div>
+                        </div>
+                    </div>
+                    <div id="panel-maya" class="payment-panel">
+                        <div class="payment-info-box maya-box">
+                            <h4><i class="fas fa-mobile-alt"></i> Maya Payment Instructions</h4>
+                            <p>1. Open your Maya app</p>
+                            <p>2. Send <strong>₱@Model.Total.ToString("N2")</strong> to: <strong>0998-765-4321</strong></p>
+                            <p>3. Account Name: <strong>BisRAM Store</strong></p>
+                            <p>4. Enter your Maya reference number below:</p>
+                            <div class="form-group" style="margin-top:8px">
+                                <input type="text" name="PaymentReference" placeholder="Maya Reference No." id="mayaRef" />
+                            </div>
+                        </div>
+                    </div>
+                    <div id="panel-bank" class="payment-panel">
+                        <div class="payment-info-box bank-box">
+                            <h4><i class="fas fa-university"></i> Bank Transfer Details</h4>
+                            <p>Bank: <strong>BDO Unibank</strong></p>
+                            <p>Account Name: <strong>BisRAM Computer Parts</strong></p>
+                            <p>Account Number: <strong>1234-5678-9012</strong></p>
+                            <p>Amount: <strong>₱@Model.Total.ToString("N2")</strong></p>
+                            <div class="form-group" style="margin-top:8px">
+                                <input type="text" name="PaymentReference" placeholder="Bank Transfer Reference No." id="bankRef" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary btn-block btn-place-order">
+                    <i class="fas fa-check-circle"></i> Place Order
+                </button>
+            </form>
+        </div>
+
+        <div class="checkout-summary animate-right">
+            <h3>Order Summary</h3>
+            @foreach (var item in Model.CartItems)
+            {
+                var price = item.Product?.Price ?? item.Listing?.Price ?? 0;
+                var name = item.Product?.Name ?? item.Listing?.Title ?? "";
+                <div class="checkout-item">
+                    <div><span class="checkout-item-name">@name</span><span class="checkout-item-qty"> x@item.Quantity</span></div>
+                    <span>₱@((price*item.Quantity).ToString("N2"))</span>
+                </div>
+            }
+            <hr />
+            <div class="summary-row"><span>Subtotal</span><span>₱@Model.Total.ToString("N2")</span></div>
+            <div class="summary-row"><span>Shipping</span><span>@(Model.Total>=5000?"FREE":"₱150.00")</span></div>
+            <div class="summary-total"><span>Total</span><span>₱@((Model.Total+(Model.Total>=5000?0:150)).ToString("N2"))</span></div>
+        </div>
+    </div>
+</div>
+<script>
+function showPaymentPanel(type) {
+    document.querySelectorAll('.payment-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+type).classList.add('active');
+}
+function updateDelivery(region) {
+    var days = '5-7';
+    if (region.includes('NCR') || region.includes('National Capital')) days = '1-2';
+    else if (region.includes('III') || region.includes('IV-A') || region.includes('CALABARZON')) days = '2-3';
+    else if (region.includes('Visayas')) days = '4-6';
+    else if (region.includes('Mindanao')) days = '6-8';
+    document.getElementById('estDays').textContent = days + ' business days';
+}
+</script>

@@ -1,0 +1,70 @@
+﻿@model List<BisRAM.Models.Product>
+@{
+    ViewBag.Title = "Manage Products";
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+    <div class="admin-main">
+        <div class="admin-header">
+            <h2><i class="fas fa-box"></i> Products</h2>
+            <a href="/Admin/CreateProduct" class="btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+        }
+
+        <div class="admin-panel">
+            <table class="admin-table full">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Brand</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr class="@(!p.IsActive ? "row-inactive" : "")">
+                            <td>@p.Id</td>
+                            <td><strong>@p.Name</strong></td>
+                            <td>@p.Category</td>
+                            <td>@p.Brand</td>
+                            <td>₱@p.Price.ToString("N2")</td>
+                            <td>
+                                <span class="@(p.Stock == 0 ? "badge-danger" : p.Stock <= 5 ? "badge-warn" : "badge-ok")">
+                                    @p.Stock
+                                </span>
+                            </td>
+                            <td>
+                                <span class="@(p.IsActive ? "badge-ok" : "badge-danger")">
+                                    @(p.IsActive ? "Active" : "Hidden")
+                                </span>
+                            </td>
+                            <td class="action-btns">
+                                <a href="/Admin/EditProduct/@p.Id" class="btn-sm btn-edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <form asp-action="DeleteProduct" method="post" style="display:inline"
+                                      onsubmit="return confirm('Remove this product?')">
+                                    <input type="hidden" name="id" value="@p.Id" />
+                                    <button type="submit" class="btn-sm btn-danger">
+                                        <i class="fas fa-eye-slash"></i> Hide
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

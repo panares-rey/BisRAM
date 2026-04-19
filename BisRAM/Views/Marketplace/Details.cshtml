@@ -1,0 +1,53 @@
+@model BisRAM.Models.Listing
+@{ ViewBag.Title = Model.Title; }
+<div class="container" style="padding:32px 24px">
+    <nav class="breadcrumb animate-down">
+        <a href="/">Home</a> <i class="fas fa-chevron-right"></i>
+        <a href="/Marketplace">Marketplace</a> <i class="fas fa-chevron-right"></i>
+        <span>@Model.Title</span>
+    </nav>
+    <div class="product-detail animate-up">
+        <div class="detail-img">
+            <div class="big-img-wrap"><i class="fas fa-microchip big-icon"></i></div>
+            <span class="badge-condition large">@Model.Condition</span>
+        </div>
+        <div class="detail-info">
+            <span class="product-cat">@Model.Category</span>
+            <h1>@Model.Title</h1>
+            <p class="detail-brand"><i class="fas fa-user-circle"></i> Seller: <strong>@Model.SellerName</strong></p>
+            <div class="detail-price">₱@Model.Price.ToString("N2")</div>
+            <div class="detail-stock">
+                @if (Model.Stock > 0) { <span class="in-stock"><i class="fas fa-check-circle"></i> Available (Qty: @Model.Stock)</span> }
+                else { <span class="no-stock"><i class="fas fa-times-circle"></i> Sold Out</span> }
+            </div>
+            <div class="detail-desc"><h4>Description</h4><p>@Model.Description</p></div>
+            <div class="detail-desc"><h4>Listed</h4><p>@Model.CreatedAt.ToString("MMMM dd, yyyy")</p></div>
+            @if (Model.Stock > 0)
+            {
+                <div class="add-to-cart-section">
+                    <button class="btn-primary btn-add-detail" onclick="addToCart(@Model.Id)">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    <a href="/Messages/Chat?userId=@Model.SellerId&listingId=@Model.Id" class="btn-outline">
+                        <i class="fas fa-comment-dots"></i> Message Seller
+                    </a>
+                </div>
+            }
+            else
+            {
+                <a href="/Messages/Chat?userId=@Model.SellerId&listingId=@Model.Id" class="btn-outline">
+                    <i class="fas fa-comment-dots"></i> Message Seller
+                </a>
+            }
+        </div>
+    </div>
+</div>
+<script>
+function addToCart(id) {
+    fetch('/Marketplace/AddToCart',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'listingId='+id+'&quantity=1'})
+    .then(r=>r.json()).then(d=>{
+        if(d.success){document.getElementById('cartCount').textContent=d.cartCount;var btn=document.querySelector('.btn-add-detail');btn.innerHTML='<i class="fas fa-check"></i> Added!';btn.style.background='#16a34a';setTimeout(()=>{btn.innerHTML='<i class="fas fa-shopping-cart"></i> Add to Cart';btn.style.background='';},2000);}
+        else alert(d.message);
+    });
+}
+</script>

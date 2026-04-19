@@ -1,0 +1,75 @@
+﻿@model BisRAM.Models.Order
+@{
+    ViewBag.Title = $"Order #{Model.Id}";
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+    <div class="admin-main">
+        <div class="admin-header">
+            <h2><i class="fas fa-file-invoice"></i> Order #@Model.Id</h2>
+            <a href="/Admin/Orders" class="btn-outline"><i class="fas fa-arrow-left"></i> Back to Orders</a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+        }
+
+        <div class="order-detail-grid">
+            <div class="admin-panel">
+                <h3><i class="fas fa-user"></i> Customer Info</h3>
+                <div class="detail-list">
+                    <div><label>Name</label><span>@Model.FullName</span></div>
+                    <div><label>Phone</label><span>@Model.Phone</span></div>
+                    <div><label>Address</label><span>@Model.Address</span></div>
+                    <div><label>Payment</label><span>@Model.PaymentMethod</span></div>
+                    <div><label>Date</label><span>@Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</span></div>
+                </div>
+            </div>
+
+            <div class="admin-panel">
+                <h3><i class="fas fa-cog"></i> Update Status</h3>
+                <form asp-action="UpdateOrderStatus" method="post">
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    <div class="form-group">
+                        <label>Current Status: <span class="status-badge @Model.Status.ToLower()">@Model.Status</span></label>
+                        <select name="status" class="mt-2">
+                            @foreach (var s in new[]{"Pending","Processing","Shipped","Delivered","Cancelled"})
+                            {
+                                <option value="@s" selected="@(Model.Status == s ? "selected" : null)">@s</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Update</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="admin-panel">
+            <h3><i class="fas fa-box"></i> Order Items</h3>
+            <table class="admin-table full">
+                <thead>
+                    <tr><th>Product</th><th>Unit Price</th><th>Qty</th><th>Subtotal</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td>₱@item.Price.ToString("N2")</td>
+                            <td>@item.Quantity</td>
+                            <td>₱@((item.Price * item.Quantity).ToString("N2"))</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3"><strong>Order Total</strong></td>
+                        <td><strong>₱@Model.Total.ToString("N2")</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

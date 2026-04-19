@@ -1,0 +1,248 @@
+@model BisRAM.Models.Product
+@{
+    ViewBag.Title = Model.Name;
+    var related = ViewBag.RelatedProducts as List<BisRAM.Models.Product> ?? new();
+}
+
+<div class="container">
+    <nav class="breadcrumb">
+        <a href="/">Home</a> <i class="fas fa-chevron-right"></i>
+        <a href="/Products">Products</a> <i class="fas fa-chevron-right"></i>
+        <a href="/Products?category=@Model.Category">@Model.Category</a> <i class="fas fa-chevron-right"></i>
+        <span>@Model.Name</span>
+    </nav>
+
+    <div class="product-detail">
+        <div class="detail-img">
+            <div class="big-img-wrap">
+                <i class="fas fa-microchip big-icon"></i>
+            </div>
+        </div>
+
+        <div class="detail-info">
+            <span class="product-cat">@Model.Category</span>
+            <h1>@Model.Name</h1>
+            <p class="detail-brand"><i class="fas fa-tag"></i> @Model.Brand</p>
+
+            <div class="detail-price">&#8369;@Model.Price.ToString("N2")</div>
+
+            <div class="detail-stock">
+                @if (Model.Stock > 10)
+                {
+                    <span class="in-stock"><i class="fas fa-check-circle"></i> In Stock (@Model.Stock available)</span>
+                }
+                else if (Model.Stock > 0)
+                {
+                    <span class="low-stock"><i class="fas fa-exclamation-circle"></i> Only @Model.Stock left!</span>
+                }
+                else
+                {
+                    <span class="no-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                }
+            </div>
+
+            <div class="detail-desc">
+                <h4>Description</h4>
+                <p>@Model.Description</p>
+            </div>
+
+            @if (Model.Stock > 0)
+            {
+                <div class="add-to-cart-section">
+                    <div class="qty-selector">
+                        <button type="button" onclick="changeQty(-1)">-</button>
+                        <input type="number" id="qty" value="1" min="1" max="@Model.Stock" />
+                        <button type="button" onclick="changeQty(1)">+</button>
+                    </div>
+                    <div class="detail-action-btns">
+                        <button class="btn-primary btn-add-detail" onclick="addToCartDetail(@Model.Id)">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        <button class="btn-buy-now" onclick="buyNow(@Model.Id)">
+                            <i class="fas fa-bolt"></i> Buy Now
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <div class="detail-meta">
+                <span><i class="fas fa-shield-alt"></i> 1 Year Warranty</span>
+                <span><i class="fas fa-truck"></i> Free shipping over &#8369;5,000</span>
+                <span><i class="fas fa-undo"></i> 30-day returns</span>
+            </div>
+        </div>
+    </div>
+
+    @if (related.Any())
+    {
+        <div class="related-section">
+            <h3>Related Products</h3>
+            <div class="product-grid">
+                @foreach (var p in related)
+                {
+                    <div class="product-card">
+                        <a href="/Products/Details/@p.Id">
+                            <div class="product-img-wrap">
+                                <i class="fas fa-microchip product-placeholder-icon"></i>
+                            </div>
+                        </a>
+                        <div class="product-info">
+                            <a href="/Products/Details/@p.Id"><h3>@p.Name</h3></a>
+                            <div class="product-footer">
+                                <span class="price">&#8369;@p.Price.ToString("N2")</span>
+                                @if (p.Stock > 0)
+                                {
+                                    <button class="btn-add-cart" onclick="addToCart(@p.Id, this)">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @* ── ASK ABOUT THIS PRODUCT chatbox ── *@
+    <div class="ask-section">
+        <div class="ask-header" onclick="toggleAskBox()">
+            <div class="ask-title"><i class="fas fa-comment-question"></i> Ask About This Product</div>
+            <i class="fas fa-chevron-down ask-chev" id="askChev"></i>
+        </div>
+        <div class="ask-body" id="askBody">
+            @if (Context.Session.GetInt32("UserId") != null)
+            {
+                <div class="ask-messages" id="askMessages">
+                    <div class="ask-placeholder">
+                        <i class="fas fa-comment-dots"></i>
+                        <p>Have a question about <strong>@Model.Name</strong>? Send a message to our support team!</p>
+                    </div>
+                </div>
+                <div class="ask-input-row">
+                    <input type="text" id="askInput" placeholder="e.g. Is this compatible with AM5? What's the warranty?" maxlength="500" />
+                    <button onclick="sendAskMessage(@Model.Id, '@System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(Model.Name)')">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <p class="ask-note"><i class="fas fa-info-circle"></i> Your message will be sent to our support. We reply via <a href="/Messages">Messages</a>.</p>
+            }
+            else
+            {
+                <div class="ask-login-prompt">
+                    <i class="fas fa-lock"></i>
+                    <p>Please <a href="/Account/Login">log in</a> to ask about this product.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    var maxStock = @Model.Stock;
+
+    function changeQty(delta) {
+        var input = document.getElementById('qty');
+        var newVal = parseInt(input.value) + delta;
+        if (newVal < 1) newVal = 1;
+        if (newVal > maxStock) newVal = maxStock;
+        input.value = newVal;
+    }
+
+    function addToCartDetail(productId) {
+        var qty = parseInt(document.getElementById('qty').value);
+        var btn = document.querySelector('.btn-add-detail');
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        btn.disabled = true;
+        fetch('/Cart/AddToCart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'productId=' + productId + '&quantity=' + qty
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success) {
+                var el = document.getElementById('cartCount');
+                if (el) el.textContent = d.cartCount;
+                btn.innerHTML = '<i class="fas fa-check"></i> Added!';
+                btn.style.background = 'linear-gradient(135deg,#16a34a,#4ade80)';
+                setTimeout(function() { btn.innerHTML = orig; btn.style.background = ''; btn.disabled = false; }, 2000);
+            } else {
+                alert(d.message || 'Please log in first.');
+                btn.innerHTML = orig; btn.disabled = false;
+            }
+        });
+    }
+
+    function buyNow(productId) {
+        var qty = parseInt(document.getElementById('qty').value);
+        var btn = document.querySelector('.btn-buy-now');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        fetch('/Cart/AddToCart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'productId=' + productId + '&quantity=' + qty
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success) {
+                window.location.href = '/Cart/Checkout';
+            } else {
+                alert(d.message || 'Please log in first.');
+                btn.innerHTML = '<i class="fas fa-bolt"></i> Buy Now';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // Ask about product chatbox
+    var askOpen = false;
+    function toggleAskBox() {
+        askOpen = !askOpen;
+        var body = document.getElementById('askBody');
+        var chev = document.getElementById('askChev');
+        body.style.maxHeight = askOpen ? body.scrollHeight + 300 + 'px' : '0';
+        body.style.opacity  = askOpen ? '1' : '0';
+        chev.style.transform = askOpen ? 'rotate(180deg)' : '';
+    }
+
+    function sendAskMessage(productId, productName) {
+        var input = document.getElementById('askInput');
+        var msg = input.value.trim();
+        if (!msg) return;
+        var msgs = document.getElementById('askMessages');
+        // Optimistically add bubble
+        var bubble = document.createElement('div');
+        bubble.className = 'ask-bubble ask-bubble-sent';
+        bubble.innerHTML = '<span>' + escHtml(msg) + '</span><small>Just now</small>';
+        msgs.querySelector('.ask-placeholder') && msgs.querySelector('.ask-placeholder').remove();
+        msgs.appendChild(bubble);
+        msgs.scrollTop = msgs.scrollHeight;
+        input.value = '';
+        // Send to admin (userId=1) with product context
+        fetch('/Messages/SendAjax', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ receiverId: 1, content: '[Product Inquiry: ' + productName + '] ' + msg, listingId: null })
+        }).then(function(r){ return r.json(); }).then(function(d){
+            if(!d.success) {
+                var err = document.createElement('div');
+                err.className = 'ask-bubble ask-bubble-err';
+                err.textContent = 'Failed to send. Please log in.';
+                msgs.appendChild(err);
+            }
+        });
+    }
+
+    function escHtml(t) {
+        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Allow Enter key
+    var inp = document.getElementById('askInput');
+    if(inp) inp.addEventListener('keydown', function(e){
+        if(e.key==='Enter') sendAskMessage(@Model.Id, '@System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(Model.Name)');
+    });
+</script>

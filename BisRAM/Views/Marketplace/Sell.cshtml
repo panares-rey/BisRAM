@@ -1,0 +1,36 @@
+@model BisRAM.Models.Listing
+@{ ViewBag.Title = "Sell an Item"; }
+<div class="container" style="padding:32px 24px">
+    <h2 class="page-title animate-up"><i class="fas fa-tag"></i> List an Item for Sale</h2>
+    <div class="admin-panel form-panel animate-up" style="max-width:700px">
+        <form asp-action="Sell" method="post" enctype="multipart/form-data">
+            <div class="form-row-2">
+                <div class="form-group"><label>Title *</label><input type="text" name="Title" placeholder="e.g. RTX 3080 10GB" required /></div>
+                <div class="form-group"><label>Category *</label>
+                    <select name="Category" required>
+                        @foreach(var c in new[]{"CPU","GPU","RAM","Storage","Motherboard","PSU","Case","Cooling","Peripherals","Other"})
+                        { <option value="@c">@c</option> }
+                    </select>
+                </div>
+            </div>
+            <div class="form-row-2">
+                <div class="form-group"><label>Condition *</label>
+                    <select name="Condition" required>
+                        @foreach(var c in new[]{"Brand New","Like New","Used","For Parts"})
+                        { <option value="@c">@c</option> }
+                    </select>
+                </div>
+                <div class="form-group"><label>Price (₱) *</label><input type="number" name="Price" min="1" step="0.01" required /></div>
+            </div>
+            <div class="form-row-2">
+                <div class="form-group"><label>Quantity *</label><input type="number" name="Stock" min="1" value="1" required /></div>
+                <div class="form-group"><label>Photo</label><input type="file" name="imageFile" accept="image/*" /></div>
+            </div>
+            <div class="form-group"><label>Description *</label><textarea name="Description" rows="4" placeholder="Describe condition, specs, included accessories..." required></textarea></div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary"><i class="fas fa-upload"></i> List for Sale</button>
+                <a href="/Marketplace" class="btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

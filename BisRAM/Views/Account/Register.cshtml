@@ -1,0 +1,124 @@
+@model BisRAM.Models.RegisterViewModel
+@{ ViewBag.Title = "Register"; }
+<div class="auth-page">
+    <div class="auth-box auth-box-wide animate-up">
+        <div class="auth-logo"><i class="fas fa-microchip"></i><h2>BisRAM</h2></div>
+        <h3>Create Account</h3>
+        <p class="auth-sub">Join BisRAM — Buy, sell, and build your dream PC.</p>
+        @if (ViewBag.Error != null) { <div class="flash flash-error"><i class="fas fa-exclamation-circle"></i> @ViewBag.Error</div> }
+        <form asp-action="Register" method="post">
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="FullName" placeholder="Juan dela Cruz" required value="@(Model == null ? "" : Model.FullName)" />
+                </div>
+                <div class="form-group">
+                    <label>Username *</label>
+                    <div class="input-prefix">
+                        <span class="prefix-at">@@</span>
+                        <input type="text" name="Username" placeholder="juanpc123" required value="@(Model == null ? "" : Model.Username)" maxlength="20" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, underscores only" />
+                    </div>
+                    <small class="field-hint">Displayed publicly. Letters, numbers, _ only.</small>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Phone *</label>
+                <input type="text" name="Phone" placeholder="+63 912 345 6789" value="@(Model == null ? "" : Model.Phone)" required />
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="Email" placeholder="you@email.com" required value="@(Model == null ? "" : Model.Email)" />
+            </div>
+            <fieldset class="address-fieldset">
+                <legend><i class="fas fa-map-marker-alt"></i> Address</legend>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Region *</label>
+                        <select name="Region" required>
+                            <option value="">-- Select Region --</option>
+                            <option value="NCR - National Capital Region">NCR - National Capital Region</option>
+                            <option value="Region I - Ilocos Region">Region I - Ilocos Region</option>
+                            <option value="Region II - Cagayan Valley">Region II - Cagayan Valley</option>
+                            <option value="Region III - Central Luzon">Region III - Central Luzon</option>
+                            <option value="Region IV-A - CALABARZON">Region IV-A - CALABARZON</option>
+                            <option value="Region IV-B - MIMAROPA">Region IV-B - MIMAROPA</option>
+                            <option value="Region V - Bicol Region">Region V - Bicol Region</option>
+                            <option value="Region VI - Western Visayas">Region VI - Western Visayas</option>
+                            <option value="Region VII - Central Visayas">Region VII - Central Visayas</option>
+                            <option value="Region VIII - Eastern Visayas">Region VIII - Eastern Visayas</option>
+                            <option value="Region IX - Zamboanga Peninsula">Region IX - Zamboanga Peninsula</option>
+                            <option value="Region X - Northern Mindanao">Region X - Northern Mindanao</option>
+                            <option value="Region XI - Davao Region">Region XI - Davao Region</option>
+                            <option value="Region XII - SOCCSKSARGEN">Region XII - SOCCSKSARGEN</option>
+                            <option value="Region XIII - Caraga">Region XIII - Caraga</option>
+                            <option value="BARMM">BARMM</option>
+                            <option value="CAR - Cordillera">CAR - Cordillera</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Province *</label>
+                        <input type="text" name="Province" placeholder="e.g. Antique" required value="@(Model == null ? "" : Model.Province)" />
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>City / Municipality *</label>
+                        <input type="text" name="City" placeholder="e.g. San Jose de Buenavista" required value="@(Model == null ? "" : Model.City)" />
+                    </div>
+                    <div class="form-group">
+                        <label>Barangay *</label>
+                        <input type="text" name="Barangay" placeholder="e.g. Barangay Poblacion" required value="@(Model == null ? "" : Model.Barangay)" />
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>ZIP Code *</label>
+                        <input type="text" name="ZipCode" placeholder="e.g. 5700" required value="@(Model == null ? "" : Model.ZipCode)" maxlength="4" />
+                    </div>
+                    <div class="form-group">
+                        <label>Street / House No. *</label>
+                        <input type="text" name="StreetAddress" placeholder="e.g. 123 Rizal Street" required value="@(Model == null ? "" : Model.StreetAddress)" />
+                    </div>
+                </div>
+            </fieldset>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Password *</label>
+                    <div class="input-eye">
+                        <input type="password" name="Password" id="pwd" placeholder="Min 8 chars" required />
+                        <button type="button" onclick="togglePwd('pwd','eye1')"><i class="fas fa-eye" id="eye1"></i></button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password *</label>
+                    <input type="password" name="ConfirmPassword" placeholder="Repeat password" required />
+                </div>
+            </div>
+            <div class="password-rules" id="pwdRules">
+                <ul>
+                    <li id="r1"><i class="fas fa-circle"></i> 8+ characters</li>
+                    <li id="r2"><i class="fas fa-circle"></i> Uppercase letter</li>
+                    <li id="r3"><i class="fas fa-circle"></i> Number</li>
+                    <li id="r4"><i class="fas fa-circle"></i> Special char (!#$%)</li>
+                </ul>
+            </div>
+            <button type="submit" class="btn-primary btn-block"><i class="fas fa-user-plus"></i> Create Account</button>
+        </form>
+        <div class="auth-footer"><p>Already have an account? <a href="/Account/Login">Sign in</a></p></div>
+    </div>
+</div>
+<script>
+function togglePwd(id, iconId) {
+    var i = document.getElementById(id);
+    var ic = document.getElementById(iconId);
+    if (i.type === 'password') { i.type = 'text'; ic.className = 'fas fa-eye-slash'; }
+    else { i.type = 'password'; ic.className = 'fas fa-eye'; }
+}
+document.getElementById('pwd').addEventListener('input', function () {
+    var v = this.value;
+    document.getElementById('r1').className = v.length >= 8 ? 'met' : '';
+    document.getElementById('r2').className = /[A-Z]/.test(v) ? 'met' : '';
+    document.getElementById('r3').className = /[0-9]/.test(v) ? 'met' : '';
+    document.getElementById('r4').className = /[!#$%^&*]/.test(v) ? 'met' : '';
+});
+</script>

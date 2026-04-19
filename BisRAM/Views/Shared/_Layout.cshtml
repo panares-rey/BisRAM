@@ -1,0 +1,153 @@
+@* _Layout.cshtml — THE SHARED PAGE SHELL (used by every page in the app).
+   Contains the <head>, navigation bar, flash messages, footer, and common scripts.
+   Each individual page is inserted where @RenderBody() is called. *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - BisRAM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/bisram.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+<nav class="navbar animate-down">
+    <div class="nav-container">
+        <a class="nav-brand" asp-controller="Home" asp-action="Index">
+            <div class="brand-logo-spin">
+                <svg class="spin-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="18" stroke="#3b82f6" stroke-width="2.5"/>
+                    <rect x="13" y="13" width="14" height="14" rx="2" fill="#2563eb"/>
+                    <rect x="9" y="17" width="4" height="2" rx="1" fill="#60a5fa"/>
+                    <rect x="27" y="17" width="4" height="2" rx="1" fill="#60a5fa"/>
+                    <rect x="9" y="21" width="4" height="2" rx="1" fill="#60a5fa"/>
+                    <rect x="27" y="21" width="4" height="2" rx="1" fill="#60a5fa"/>
+                    <rect x="17" y="9" width="2" height="4" rx="1" fill="#60a5fa"/>
+                    <rect x="21" y="9" width="2" height="4" rx="1" fill="#60a5fa"/>
+                    <rect x="17" y="27" width="2" height="4" rx="1" fill="#60a5fa"/>
+                    <rect x="21" y="27" width="2" height="4" rx="1" fill="#60a5fa"/>
+                    <rect x="16" y="16" width="8" height="8" rx="1.5" fill="white" fill-opacity="0.9"/>
+                </svg>
+            </div>
+            <span class="brand-text"><span class="brand-bis">Bis</span><span class="brand-ram">RAM</span></span>
+        </a>
+        <div class="nav-search">
+            <form asp-controller="Products" asp-action="Index" method="get">
+                <input type="text" name="query" placeholder="Search CPUs, GPUs, RAM..." value="@Context.Request.Query["query"].ToString()" />
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+        <div class="nav-links">
+            <a href="/Products" class="nav-link"><i class="fas fa-store"></i> Shop</a>
+            <a href="/Marketplace" class="nav-link"><i class="fas fa-handshake"></i> Marketplace</a>
+            @if (Context.Session.GetString("UserRole") == "Admin")
+            {
+                <a href="/Admin/Dashboard" class="nav-link"><i class="fas fa-cog"></i> Admin</a>
+            }
+            @if (Context.Session.GetInt32("UserId") != null)
+            {
+                <a href="/Messages" class="nav-link msg-link">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="msg-badge" id="msgCount" style="display:none">0</span>
+                </a>
+                <a href="/Cart" class="nav-link cart-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cartCount">0</span>
+                </a>
+                <div class="user-menu" id="userMenu">
+                    <div class="user-trigger" onclick="toggleUserMenu(event)">
+                        <div class="nav-avatar-wrap">
+                            <img src="@Context.Session.GetString("UserAvatar")" class="nav-avatar" onerror="this.src='/images/avatars/default.svg'" />
+                            <span class="nav-online-dot"></span>
+                        </div>
+                        <span class="nav-username"><span class="username-at">@@</span>@Context.Session.GetString("UserUsername")</span>
+                        <i class="fas fa-chevron-down nav-chev" id="userChev"></i>
+                    </div>
+                    <div class="dropdown" id="userDropdown">
+                        <a href="/Account/Profile"><i class="fas fa-user-circle"></i> My Profile</a>
+                        <a href="/Marketplace/Sell"><i class="fas fa-tag"></i> Sell an Item</a>
+                        <hr />
+                        <a href="/Account/Logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a href="/Account/Login" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+                <a href="/Account/Register" class="btn-register">Register</a>
+            }
+        </div>
+    </div>
+</nav>
+
+@* Flash messages — only rendered (with spacing) when there is actually a message to show *@
+@if (TempData["Success"] != null || TempData["Error"] != null)
+{
+    <div class="flash-container" style="margin-top:12px;">
+        @if (TempData["Success"] != null)
+        { <div class="flash flash-success"><i class="fas fa-check-circle"></i> @TempData["Success"] <button onclick="this.parentElement.remove()">×</button></div> }
+        @if (TempData["Error"] != null)
+        { <div class="flash flash-error"><i class="fas fa-exclamation-circle"></i> @TempData["Error"] <button onclick="this.parentElement.remove()">×</button></div> }
+    </div>
+}
+
+<main class="page-main" style="margin:0;padding:0;">@RenderBody()</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h4><i class="fas fa-microchip"></i> BisRAM</h4>
+            <p>Your trusted marketplace for computer parts in the Philippines.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Shop</h4>
+            <a href="/Products?category=CPU">CPUs</a>
+            <a href="/Products?category=GPU">GPUs</a>
+            <a href="/Products?category=RAM">Memory</a>
+            <a href="/Products?category=Storage">Storage</a>
+        </div>
+        <div class="footer-col">
+            <h4>Marketplace</h4>
+            <a href="/Marketplace">Browse Listings</a>
+            <a href="/Marketplace/Sell">Sell an Item</a>
+            <a href="/Messages">My Messages</a>
+        </div>
+        <div class="footer-col">
+            <h4>Contact</h4>
+            <p><i class="fas fa-envelope"></i> support@bisram.com</p>
+            <p><i class="fas fa-phone"></i> +63 912 345 6789</p>
+            <p><i class="fas fa-map-marker-alt"></i> Philippines</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; @DateTime.Now.Year BisRAM. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="~/js/bisram.js"></script>
+<script>
+    fetch('/Cart/GetCartCount').then(r=>r.json()).then(d=>{ var el=document.getElementById('cartCount'); if(el) el.textContent=d.count; });
+    fetch('/Messages/GetUnreadCount').then(r=>r.json()).then(d=>{ var el=document.getElementById('msgCount'); if(el&&d.count>0){el.textContent=d.count;el.style.display='flex';} });
+    setTimeout(()=>{ document.querySelectorAll('.flash').forEach(a=>{a.style.opacity='0';setTimeout(()=>a.remove(),400);}); }, 4000);
+
+    // Click-to-lock user dropdown
+    function toggleUserMenu(e) {
+        e.stopPropagation();
+        var menu = document.getElementById('userMenu');
+        var chev = document.getElementById('userChev');
+        var isOpen = menu.classList.toggle('open');
+        if(chev) chev.style.transform = isOpen ? 'rotate(180deg)' : '';
+    }
+    document.addEventListener('click', function(e) {
+        var menu = document.getElementById('userMenu');
+        if(menu && !menu.contains(e.target)) {
+            menu.classList.remove('open');
+            var chev = document.getElementById('userChev');
+            if(chev) chev.style.transform = '';
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+@model BisRAM.Models.User
+@{ ViewBag.Title = "My Profile"; var orders = ViewBag.Orders as List<BisRAM.Models.Order> ?? new(); var listings = ViewBag.Listings as List<BisRAM.Models.Listing> ?? new(); }
+<div class="container" style="padding:32px 24px">
+    <h2 class="page-title animate-up"><i class="fas fa-user-circle"></i> My Account</h2>
+    <div class="profile-layout">
+        <div class="profile-sidebar animate-left">
+            <div class="avatar-section">
+                <div class="avatar-wrap">
+                    <img src="@(Model?.AvatarUrl ?? "/images/avatars/default.svg")" id="avatarPreview" class="profile-avatar-img" onerror="this.src='/images/avatars/default.svg'" />
+                    <label class="avatar-edit-btn" for="avatarInput"><i class="fas fa-camera"></i></label>
+                </div>
+                <h3>@Model?.FullName</h3>
+                <p>@Model?.Email</p>
+                <span class="role-badge @Model?.Role.ToLower()">@Model?.Role</span>
+                <form asp-action="UploadAvatar" method="post" enctype="multipart/form-data" id="avatarForm">
+                    <input type="file" id="avatarInput" name="avatarFile" accept="image/*" style="display:none" onchange="previewAvatar(this)" />
+                </form>
+            </div>
+            <nav class="profile-nav">
+                <a href="#edit-profile" class="pnav active" onclick="showTab('edit-profile',this)"><i class="fas fa-edit"></i> Edit Profile</a>
+                <a href="#my-orders" class="pnav" onclick="showTab('my-orders',this)"><i class="fas fa-box"></i> My Orders (@orders.Count)</a>
+                <a href="#my-listings" class="pnav" onclick="showTab('my-listings',this)"><i class="fas fa-tag"></i> My Listings (@listings.Count)</a>
+                <a href="/Messages" class="pnav"><i class="fas fa-comment-dots"></i> Messages</a>
+                <a href="/Account/Logout" class="pnav danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+        <div class="profile-content animate-up">
+            <div id="edit-profile" class="tab-panel active">
+                <h3><i class="fas fa-edit"></i> Edit Profile</h3>
+                <form asp-action="UpdateProfile" method="post">
+                    <div class="form-row-2">
+                        <div class="form-group"><label>Full Name</label><input type="text" name="fullName" value="@Model?.FullName" required /></div>
+                        <div class="form-group"><label>Phone</label><input type="text" name="phone" value="@Model?.Phone" /></div>
+                    </div>
+                    <fieldset class="address-fieldset">
+                        <legend><i class="fas fa-map-marker-alt"></i> Delivery Address</legend>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>Region</label>
+                                <select name="region">
+                                    @foreach(var r in new[]{"NCR - National Capital Region","Region I - Ilocos Region","Region II - Cagayan Valley","Region III - Central Luzon","Region IV-A - CALABARZON","Region IV-B - MIMAROPA","Region V - Bicol Region","Region VI - Western Visayas","Region VII - Central Visayas","Region VIII - Eastern Visayas","Region IX - Zamboanga Peninsula","Region X - Northern Mindanao","Region XI - Davao Region","Region XII - SOCCSKSARGEN","Region XIII - Caraga","BARMM","CAR - Cordillera"})
+                                    {
+                                        if(Model?.Region==r){<option value="@r" selected>@r</option>}else{<option value="@r">@r</option>}
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Province</label><input type="text" name="province" value="@Model?.Province" /></div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group"><label>City / Municipality</label><input type="text" name="city" value="@Model?.City" /></div>
+                            <div class="form-group"><label>Barangay</label><input type="text" name="barangay" value="@Model?.Barangay" /></div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group"><label>ZIP Code</label><input type="text" name="zipCode" value="@Model?.ZipCode" maxlength="4" /></div>
+                            <div class="form-group"><label>Street / House No.</label><input type="text" name="streetAddress" value="@Model?.StreetAddress" /></div>
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                </form>
+            </div>
+
+            <div id="my-orders" class="tab-panel">
+                <h3><i class="fas fa-box"></i> My Orders</h3>
+                @if (!orders.Any()) { <div class="empty-state"><i class="fas fa-box-open"></i><p>No orders yet. <a href="/Products">Start shopping!</a></p></div> }
+                @foreach (var o in orders)
+                {
+                    <div class="order-card animate-up">
+                        <div class="order-card-header">
+                            <div><strong>Order #@o.Id</strong><span class="order-date">@o.CreatedAt.ToString("MMM dd, yyyy")</span></div>
+                            <span class="status-badge @o.Status.ToLower()">@o.Status</span>
+                        </div>
+                        <div class="order-timeline">
+                            @{ var steps = new[]{"Pending","Processing","Shipped","Delivered"}; var ci = Array.IndexOf(steps, o.Status); }
+                            @for(int i=0;i<steps.Length;i++)
+                            {
+                                <div class="tl-step @(i<ci?"done":i==ci?"active":"")">
+                                    <div class="tl-dot"><i class="fas @(i<ci?"fa-check":i==ci?"fa-circle":"fa-circle")"></i></div>
+                                    <span>@steps[i]</span>
+                                </div>
+                                if(i<steps.Length-1){<div class="tl-line @(i<ci?"done":"")"></div>}
+                            }
+                        </div>
+                        @if (o.EstimatedDelivery.HasValue && o.Status != "Delivered" && o.Status != "Cancelled")
+                        {
+                            <p class="delivery-est"><i class="fas fa-truck"></i> Estimated Delivery: <strong>@o.EstimatedDelivery.Value.ToString("MMMM dd, yyyy")</strong></p>
+                        }
+                        <div class="order-items-list">
+                            @foreach (var item in o.Items) { <div class="order-item-line"><span>@item.ProductName x@item.Quantity</span><span>₱@((item.Price*item.Quantity).ToString("N2"))</span></div> }
+                        </div>
+                        <div class="order-card-footer"><span><i class="fas fa-credit-card"></i> @o.PaymentMethod</span><strong>Total: ₱@o.Total.ToString("N2")</strong></div>
+                    </div>
+                }
+            </div>
+
+            <div id="my-listings" class="tab-panel">
+                <h3><i class="fas fa-tag"></i> My Listings</h3>
+                <a href="/Marketplace/Sell" class="btn-primary" style="margin-bottom:16px;display:inline-flex"><i class="fas fa-plus"></i> Add New Listing</a>
+                @if (!listings.Any()) { <div class="empty-state"><i class="fas fa-tag"></i><p>No listings yet. <a href="/Marketplace/Sell">Start selling!</a></p></div> }
+                <div class="product-grid">
+                    @foreach (var l in listings)
+                    {
+                        <div class="product-card animate-up">
+                            <div class="product-img-wrap"><i class="fas fa-microchip product-placeholder-icon"></i><span class="badge-condition">@l.Condition</span></div>
+                            <div class="product-info">
+                                <span class="product-cat">@l.Category</span>
+                                <h3>@l.Title</h3>
+                                <div class="product-footer">
+                                    <span class="price">₱@l.Price.ToString("N2")</span>
+                                    <span class="status-badge @l.Status.ToLower()">@l.Status</span>
+                                </div>
+                                <div style="display:flex;gap:6px;margin-top:8px">
+                                    <a href="/Marketplace/EditListing/@l.Id" class="btn-sm btn-edit"><i class="fas fa-edit"></i></a>
+                                    <form method="post" action="/Marketplace/DeleteListing" onsubmit="return confirm('Remove listing?')">
+                                        <input type="hidden" name="id" value="@l.Id" />
+                                        <button type="submit" class="btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function showTab(id, el) {
+    event.preventDefault();
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.pnav').forEach(n=>n.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+}
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatarPreview').src = e.target.result;
+            document.getElementById('avatarForm').submit();
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>

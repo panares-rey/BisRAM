@@ -1,0 +1,117 @@
+@* Home/Index.cshtml — The MAIN HOME PAGE of BisRAM.
+   Displays the hero section, product categories, featured products, and recent marketplace listings.
+   Data comes from ViewBag (set by HomeController.Index). *@
+@{
+    ViewBag.Title = "Home";
+    var featured = ViewBag.FeaturedProducts as List<BisRAM.Models.Product> ?? new();
+    var categories = ViewBag.Categories as List<string> ?? new();
+    var recentListings = ViewBag.RecentListings as List<BisRAM.Models.Listing> ?? new();
+}
+<section class="hero">
+    <div class="hero-content animate-left">
+        <h1>Build Your <span>Dream PC</span></h1>
+        <p>Premium computer parts, competitive prices. Buy, sell & connect with the PH tech community.</p>
+        <div class="hero-btns">
+            <a href="/Products" class="btn-primary btn-lg"><i class="fas fa-store"></i> Shop Now</a>
+            <a href="/Marketplace" class="btn-outline"><i class="fas fa-handshake"></i> Marketplace</a>
+        </div>
+    </div>
+    <div class="hero-image animate-right">
+        <div class="hero-graphic"><i class="fas fa-microchip"></i></div>
+    </div>
+</section>
+
+<section class="categories-bar">
+    <div class="container">
+        <div class="cat-grid">
+            @foreach (var cat in categories)
+            {
+                var icon = cat switch { "CPU"=>"fas fa-microchip","GPU"=>"fas fa-tv","RAM"=>"fas fa-memory","Storage"=>"fas fa-hdd","Motherboard"=>"fas fa-server","PSU"=>"fas fa-plug","Case"=>"fas fa-box","Cooling"=>"fas fa-fan",_=>"fas fa-cogs" };
+                <a href="/Products?category=@cat" class="cat-card"><i class="@icon"></i><span>@cat</span></a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="featured-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Featured Products</h2>
+            <a href="/Products" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="product-grid">
+            @foreach (var p in featured)
+            {
+                <div class="product-card">
+                    <a href="/Products/Details/@p.Id" class="product-img-link">
+                        <div class="product-img-wrap">
+                            @if (!string.IsNullOrEmpty(p.ImageUrl) && p.ImageUrl != "/images/products/default.jpg")
+                            {
+                                <img src="@p.ImageUrl" alt="@p.Name" class="product-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                <div class="product-img-fallback" style="display:none"><i class="fas fa-microchip product-placeholder-icon"></i></div>
+                            }
+                            else
+                            {
+                                <i class="fas fa-microchip product-placeholder-icon"></i>
+                            }
+                        </div>
+                    </a>
+                    <div class="product-info">
+                        <span class="product-cat">@p.Category</span>
+                        <a href="/Products/Details/@p.Id"><h3>@p.Name</h3></a>
+                        <p class="product-brand">@p.Brand</p>
+                        <div class="product-footer">
+                            <span class="price">&#8369;@p.Price.ToString("N2")</span>
+                            @if (p.Stock > 0) { <button class="btn-add-cart" onclick="addToCart(@p.Id, this)"><i class="fas fa-cart-plus"></i></button> }
+                            else { <span class="no-stock" style="font-size:.75rem">Out of Stock</span> }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (recentListings.Any())
+{
+    <section class="featured-section" style="background:var(--surface);padding:60px 0">
+        <div class="container">
+            <div class="section-header">
+                <h2><i class="fas fa-handshake" style="color:#10b981"></i> Marketplace Listings</h2>
+                <a href="/Marketplace" class="view-all">Browse All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="product-grid">
+                @foreach (var l in recentListings)
+                {
+                    <div class="product-card">
+                        <a href="/Marketplace/Details/@l.Id">
+                            <div class="product-img-wrap">
+                                <i class="fas fa-microchip product-placeholder-icon"></i>
+                                <span class="badge-condition @l.Condition.ToLower().Replace(" ","-")">@l.Condition</span>
+                            </div>
+                        </a>
+                        <div class="product-info">
+                            <span class="product-cat">@l.Category</span>
+                            <a href="/Marketplace/Details/@l.Id"><h3>@l.Title</h3></a>
+                            <p class="product-brand"><i class="fas fa-user"></i> @l.SellerName</p>
+                            <div class="product-footer">
+                                <span class="price">&#8369;@l.Price.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="promo-banner">
+    <div class="container">
+        <div class="promo-grid">
+            <div class="promo-card blue"><i class="fas fa-truck"></i><h4>Free Shipping</h4><p>On orders over &#8369;5,000</p></div>
+            <div class="promo-card green"><i class="fas fa-shield-alt"></i><h4>Warranty</h4><p>1 year on all parts</p></div>
+            <div class="promo-card orange"><i class="fas fa-headset"></i><h4>24/7 Support</h4><p>Expert tech help</p></div>
+            <div class="promo-card purple"><i class="fas fa-handshake"></i><h4>Marketplace</h4><p>Buy &amp; sell with users</p></div>
+        </div>
+    </div>
+</section>

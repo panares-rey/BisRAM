@@ -1,0 +1,45 @@
+@model BisRAM.Models.Listing
+@{ ViewBag.Title = "Edit Listing"; }
+<div class="container" style="padding:32px 24px">
+    <h2 class="page-title animate-up"><i class="fas fa-edit"></i> Edit Listing</h2>
+    <div class="admin-panel form-panel animate-up" style="max-width:700px">
+        <form asp-action="EditListing" method="post">
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <input type="hidden" name="SellerId" value="@Model.SellerId" />
+            <input type="hidden" name="SellerName" value="@Model.SellerName" />
+            <input type="hidden" name="ImageUrl" value="@Model.ImageUrl" />
+            <div class="form-row-2">
+                <div class="form-group"><label>Title</label><input type="text" name="Title" value="@Model.Title" required /></div>
+                <div class="form-group"><label>Category</label>
+                    <select name="Category">
+                        @foreach(var c in new[]{"CPU","GPU","RAM","Storage","Motherboard","PSU","Case","Cooling","Peripherals","Other"})
+                        { if(Model.Category==c){<option value="@c" selected>@c</option>}else{<option value="@c">@c</option>} }
+                    </select>
+                </div>
+            </div>
+            <div class="form-row-2">
+                <div class="form-group"><label>Condition</label>
+                    <select name="Condition">
+                        @foreach(var c in new[]{"Brand New","Like New","Used","For Parts"})
+                        { if(Model.Condition==c){<option value="@c" selected>@c</option>}else{<option value="@c">@c</option>} }
+                    </select>
+                </div>
+                <div class="form-group"><label>Price (₱)</label><input type="number" name="Price" value="@Model.Price" min="1" step="0.01" required /></div>
+            </div>
+            <div class="form-row-2">
+                <div class="form-group"><label>Quantity</label><input type="number" name="Stock" value="@Model.Stock" min="0" required /></div>
+                <div class="form-group"><label>Status</label>
+                    <select name="Status">
+                        @foreach(var s in new[]{"Active","Sold","Paused"})
+                        { if(Model.Status==s){<option value="@s" selected>@s</option>}else{<option value="@s">@s</option>} }
+                    </select>
+                </div>
+            </div>
+            <div class="form-group"><label>Description</label><textarea name="Description" rows="4">@Model.Description</textarea></div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Update Listing</button>
+                <a href="/Account/Profile" class="btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

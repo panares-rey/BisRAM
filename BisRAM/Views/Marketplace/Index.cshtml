@@ -1,0 +1,110 @@
+@* Marketplace/Index.cshtml — The MARKETPLACE LISTING BROWSER.
+   Shows all user-posted listings with search, filter, and sort.
+   Bound to MarketplaceSearchViewModel from MarketplaceController.Index(). *@
+@model BisRAM.Models.MarketplaceSearchViewModel
+@{ ViewBag.Title = "Marketplace"; }
+<section class="marketplace-hero animate-down">
+    <div class="container">
+        <h1><i class="fas fa-handshake"></i> BisRAM Marketplace</h1>
+        <p>Buy and sell second-hand computer parts directly with other users</p>
+        <a href="/Marketplace/Sell" class="btn-primary btn-lg"><i class="fas fa-tag"></i> Sell an Item</a>
+    </div>
+</section>
+<div class="shop-layout container">
+    <aside class="shop-sidebar">
+        <div class="filter-box animate-left">
+            <h3><i class="fas fa-filter"></i> Filters</h3>
+            <form method="get" id="filterForm">
+                <input type="hidden" name="query" value="@Model.Query" />
+                <div class="filter-section">
+                    <label>Category</label>
+                    <label class="check-label"><input type="radio" name="category" value="CPU" @(Model.Category=="CPU"?"checked":"") onchange="this.form.submit()" /> CPU</label>
+                    <label class="check-label"><input type="radio" name="category" value="GPU" @(Model.Category=="GPU"?"checked":"") onchange="this.form.submit()" /> GPU</label>
+                    <label class="check-label"><input type="radio" name="category" value="RAM" @(Model.Category=="RAM"?"checked":"") onchange="this.form.submit()" /> RAM</label>
+                    <label class="check-label"><input type="radio" name="category" value="Storage" @(Model.Category=="Storage"?"checked":"") onchange="this.form.submit()" /> Storage</label>
+                    <label class="check-label"><input type="radio" name="category" value="Motherboard" @(Model.Category=="Motherboard"?"checked":"") onchange="this.form.submit()" /> Motherboard</label>
+                    <label class="check-label"><input type="radio" name="category" value="PSU" @(Model.Category=="PSU"?"checked":"") onchange="this.form.submit()" /> PSU</label>
+                    <label class="check-label"><input type="radio" name="category" value="Case" @(Model.Category=="Case"?"checked":"") onchange="this.form.submit()" /> Case</label>
+                    <label class="check-label"><input type="radio" name="category" value="Cooling" @(Model.Category=="Cooling"?"checked":"") onchange="this.form.submit()" /> Cooling</label>
+                    <label class="check-label"><input type="radio" name="category" value="Peripherals" @(Model.Category=="Peripherals"?"checked":"") onchange="this.form.submit()" /> Peripherals</label>
+                    <label class="check-label"><input type="radio" name="category" value="Other" @(Model.Category=="Other"?"checked":"") onchange="this.form.submit()" /> Other</label>
+                    @if (!string.IsNullOrEmpty(Model.Category))
+                    {
+                        <label class="check-label"><input type="radio" name="category" value="" onchange="this.form.submit()" /> All Categories</label>
+                    }
+                </div>
+                <div class="filter-section">
+                    <label>Condition</label>
+                    <label class="check-label"><input type="radio" name="condition" value="Brand New" @(Model.Condition=="Brand New"?"checked":"") onchange="this.form.submit()" /> Brand New</label>
+                    <label class="check-label"><input type="radio" name="condition" value="Like New" @(Model.Condition=="Like New"?"checked":"") onchange="this.form.submit()" /> Like New</label>
+                    <label class="check-label"><input type="radio" name="condition" value="Used" @(Model.Condition=="Used"?"checked":"") onchange="this.form.submit()" /> Used</label>
+                    <label class="check-label"><input type="radio" name="condition" value="For Parts" @(Model.Condition=="For Parts"?"checked":"") onchange="this.form.submit()" /> For Parts</label>
+                    @if (!string.IsNullOrEmpty(Model.Condition))
+                    {
+                        <label class="check-label"><input type="radio" name="condition" value="" onchange="this.form.submit()" /> All Conditions</label>
+                    }
+                </div>
+                <a href="/Marketplace" class="btn-clear">Clear Filters</a>
+            </form>
+        </div>
+    </aside>
+    <div class="shop-main">
+        <div class="shop-toolbar">
+            <p>@Model.Listings.Count listing(s) found</p>
+            <form method="get">
+                <input type="hidden" name="query" value="@Model.Query" />
+                <input type="hidden" name="category" value="@Model.Category" />
+                <input type="hidden" name="condition" value="@Model.Condition" />
+                <select name="sortBy" onchange="this.form.submit()">
+                    @if (Model.SortBy == "newest") { <option value="newest" selected>Newest First</option> } else { <option value="newest">Newest First</option> }
+                    @if (Model.SortBy == "price_asc") { <option value="price_asc" selected>Price: Low to High</option> } else { <option value="price_asc">Price: Low to High</option> }
+                    @if (Model.SortBy == "price_desc") { <option value="price_desc" selected>Price: High to Low</option> } else { <option value="price_desc">Price: High to Low</option> }
+                </select>
+            </form>
+        </div>
+        @if (!Model.Listings.Any())
+        {
+            <div class="empty-state"><i class="fas fa-search-minus"></i><h3>No listings found</h3><p>Try adjusting filters or <a href="/Marketplace/Sell">be the first to sell!</a></p></div>
+        }
+        else
+        {
+            <div class="product-grid">
+                @foreach (var l in Model.Listings)
+                {
+                    <div class="product-card animate-up">
+                        <a href="/Marketplace/Details/@l.Id">
+                            <div class="product-img-wrap">
+                                <i class="fas fa-microchip product-placeholder-icon"></i>
+                                <span class="badge-condition @l.Condition.ToLower().Replace(" ","-")">@l.Condition</span>
+                            </div>
+                        </a>
+                        <div class="product-info">
+                            <span class="product-cat">@l.Category</span>
+                            <a href="/Marketplace/Details/@l.Id"><h3>@l.Title</h3></a>
+                            <p class="product-brand"><i class="fas fa-user"></i> @l.SellerName</p>
+                            <div class="product-footer">
+                                <span class="price">&#8369;@l.Price.ToString("N2")</span>
+                                <button class="btn-add-cart" onclick="addListing(@l.Id, this)"><i class="fas fa-cart-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+<script>
+function addListing(id, btn) {
+    btn.disabled = true;
+    fetch('/Marketplace/AddToCart', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'listingId=' + id + '&quantity=1' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.success) {
+            document.getElementById('cartCount').textContent = d.cartCount;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.classList.add('added');
+            setTimeout(function() { btn.innerHTML = '<i class="fas fa-cart-plus"></i>'; btn.classList.remove('added'); btn.disabled = false; }, 1500);
+        } else { alert(d.message); btn.disabled = false; }
+    });
+}
+</script>
