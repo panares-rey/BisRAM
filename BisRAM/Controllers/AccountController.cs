@@ -12,6 +12,8 @@ using BisRAM.Models; // For User, LoginViewModel, RegisterViewModel
 
 namespace BisRAM.Controllers
 {
+
+    //testing//
     public class AccountController : Controller
     {
         private readonly DbHelper _db;          // Database helper for all DB operations
