@@ -15,13 +15,25 @@ function addToCart(productId, btn) {
 }
 
 // ── SCROLL REVEAL ──
-document.addEventListener('DOMContentLoaded', function() {
-    var els = document.querySelectorAll('.product-card, .stat-card, .promo-card, .order-card, .convo-card');
-    els.forEach(function(el) { el.classList.add('scroll-reveal'); });
-    var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-    }, { threshold: 0.1 });
-    els.forEach(function(el) { observer.observe(el); });
+document.addEventListener('DOMContentLoaded', function () {
+    var isProductPage = window.location.pathname.includes('/Products');
+    var hasCategory = window.location.search.length > 0; // Any query params means we're filtering
+
+    // Apply page animation only on homepage or first visit to products (no filters)
+    var pageMain = document.querySelector('.page-main');
+    if (pageMain && (!isProductPage || (isProductPage && !hasCategory))) {
+        pageMain.style.animation = 'fadeUp .4s ease';
+    }
+
+    // Only animate cards if NOT on products page OR on products page without any filters (fresh visit)
+    if (!isProductPage || (isProductPage && !hasCategory)) {
+        var els = document.querySelectorAll('.product-card, .stat-card, .promo-card, .order-card, .convo-card');
+        els.forEach(function (el) { el.classList.add('scroll-reveal'); });
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+        }, { threshold: 0.1 });
+        els.forEach(function (el) { observer.observe(el); });
+    }
 });
 
 // ── RIPPLE EFFECT on buttons ──

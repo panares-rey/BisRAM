@@ -189,8 +189,38 @@ a{color:var(--primary);text-decoration:none}a:hover{color:var(--primary-dark)}
 .filter-section>label{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:8px}
 .check-label{display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;padding:3px 0}
 .check-label input{accent-color:var(--cyan)}
-.price-inputs{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-.price-inputs input{flex:1;padding:7px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:.85rem}
+.price-inputs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px
+}
+
+    .price-inputs input {
+        flex: 1;
+        padding: 9px 10px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        font-size: .85rem;
+        outline: none;
+        transition: border-color .2s;
+        min-width: 0
+    }
+
+        .price-inputs input:focus {
+            border-color: var(--cyan)
+        }
+
+        .price-inputs input::placeholder {
+            color: var(--muted);
+            opacity: .6
+        }
+
+    .price-inputs span {
+        color: var(--muted);
+        font-weight: 600;
+        flex-shrink: 0
+    }
 .btn-filter{width:100%;padding:8px;background:linear-gradient(135deg,var(--primary),var(--cyan));color:white;border:none;border-radius:var(--radius);cursor:pointer;font-weight:600;margin-bottom:6px}
 .btn-clear{display:block;text-align:center;font-size:.85rem;color:var(--muted);margin-top:4px}
 .shop-main{flex:1}
@@ -490,7 +520,7 @@ a{color:var(--primary);text-decoration:none}a:hover{color:var(--primary-dark)}
 /* ===== RIPPLE ===== */
 @keyframes ripple{to{transform:scale(4);opacity:0}}
 /* ===== PAGE TRANSITION ===== */
-.page-main{animation:fadeUp .4s ease}
+/*.page-main{animation:fadeUp .4s ease}*/
 
 /* ===== USERNAME @ PREFIX INPUT ===== */
 .input-prefix{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface);transition:border-color .2s}

@@ -1,7 +1,7 @@
 @* Cart/Index.cshtml — The SHOPPING CART page.
    Shows the current user's cart items, quantities, and total price.
    Lets users update quantities or remove items before checking out. *@
-﻿@model List<BisRAM.Models.CartItem>
+@model List<BisRAM.Models.CartItem>
 @{
     ViewBag.Title = "My Cart";
     decimal total = Model.Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
