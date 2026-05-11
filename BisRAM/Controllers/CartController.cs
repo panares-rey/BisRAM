@@ -72,6 +72,15 @@ namespace BisRAM.Controllers
         {
             if (UserId == null) return RedirectToAction("Login", "Account");
 
+            // Cap quantity at the available stock so it can't be bypassed
+            var items = _db.GetCartItems(UserId.Value);
+            var item = items.FirstOrDefault(i => i.Id == cartItemId);
+            if (item != null)
+            {
+                var stock = item.Product?.Stock ?? item.Listing?.Stock ?? 0;
+                if (quantity > stock) quantity = stock;
+            }
+
             // Update the quantity in the database (if quantity is 0 or less, the item is removed)
             _db.UpdateCartQuantity(cartItemId, quantity);
 

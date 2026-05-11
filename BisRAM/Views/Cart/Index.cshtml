@@ -37,6 +37,8 @@
                     var brand = item.Product?.Brand ?? "";
                     var category = item.Product?.Category ?? item.Listing?.Category ?? "";
                     var detailsLink = item.Product != null ? $"/Products/Details/{item.ProductId}" : $"/Marketplace/Details/{item.ListingId}";
+                    var stock = item.Product?.Stock ?? item.Listing?.Stock ?? 0;
+                    var atMax = item.Quantity >= stock;
                     
                     <div class="cart-row">
                         <div class="cart-product">
@@ -52,8 +54,12 @@
                             <div class="qty-selector small">
                                 <button type="submit" name="quantity" value="@(item.Quantity - 1)">-</button>
                                 <span>@item.Quantity</span>
-                                <button type="submit" name="quantity" value="@(item.Quantity + 1)">+</button>
+                                <button type="submit" name="quantity" value="@(item.Quantity + 1)" @(atMax ? "disabled" : "") style="@(atMax ? "opacity:0.4;cursor:not-allowed;" : "")">+</button>
                             </div>
+                            @if (atMax)
+                            {
+                                <small style="color:#ef4444;font-size:.7rem;display:block;text-align:center;margin-top:2px;">Max (@stock)</small>
+                            }
                         </form>
                         <span class="cart-subtotal">₱@((price * item.Quantity).ToString("N2"))</span>
                         <form asp-action="Remove" method="post">
