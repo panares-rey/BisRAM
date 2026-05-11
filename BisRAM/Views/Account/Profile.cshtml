@@ -1,5 +1,7 @@
 @model BisRAM.Models.User
-@{ ViewBag.Title = "My Profile"; var orders = ViewBag.Orders as List<BisRAM.Models.Order> ?? new(); var listings = ViewBag.Listings as List<BisRAM.Models.Listing> ?? new(); }
+@{
+    ViewBag.Title = "My Profile"; var orders = ViewBag.Orders as List<BisRAM.Models.Order> ?? new(); var listings = ViewBag.Listings as List<BisRAM.Models.Listing> ?? new();
+}
 <div class="container" style="padding:32px 24px">
     <h2 class="page-title animate-up"><i class="fas fa-user-circle"></i> My Account</h2>
     <div class="profile-layout">
@@ -38,9 +40,16 @@
                             <div class="form-group">
                                 <label>Region</label>
                                 <select name="region">
-                                    @foreach(var r in new[]{"NCR - National Capital Region","Region I - Ilocos Region","Region II - Cagayan Valley","Region III - Central Luzon","Region IV-A - CALABARZON","Region IV-B - MIMAROPA","Region V - Bicol Region","Region VI - Western Visayas","Region VII - Central Visayas","Region VIII - Eastern Visayas","Region IX - Zamboanga Peninsula","Region X - Northern Mindanao","Region XI - Davao Region","Region XII - SOCCSKSARGEN","Region XIII - Caraga","BARMM","CAR - Cordillera"})
+                                    @foreach (var r in new[] { "NCR - National Capital Region", "Region I - Ilocos Region", "Region II - Cagayan Valley", "Region III - Central Luzon", "Region IV-A - CALABARZON", "Region IV-B - MIMAROPA", "Region V - Bicol Region", "Region VI - Western Visayas", "Region VII - Central Visayas", "Region VIII - Eastern Visayas", "Region IX - Zamboanga Peninsula", "Region X - Northern Mindanao", "Region XI - Davao Region", "Region XII - SOCCSKSARGEN", "Region XIII - Caraga", "BARMM", "CAR - Cordillera" })
                                     {
-                                        if(Model?.Region==r){<option value="@r" selected>@r</option>}else{<option value="@r">@r</option>}
+                                        if (Model?.Region == r)
+                                        {
+                                            <option value="@r" selected>@r</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@r">@r</option>
+                                        }
                                     }
                                 </select>
                             </div>
@@ -61,7 +70,10 @@
 
             <div id="my-orders" class="tab-panel">
                 <h3><i class="fas fa-box"></i> My Orders</h3>
-                @if (!orders.Any()) { <div class="empty-state"><i class="fas fa-box-open"></i><p>No orders yet. <a href="/Products">Start shopping!</a></p></div> }
+                @if (!orders.Any())
+                {
+                    <div class="empty-state"><i class="fas fa-box-open"></i><p>No orders yet. <a href="/Products">Start shopping!</a></p></div>
+                }
                 @foreach (var o in orders)
                 {
                     <div class="order-card animate-up">
@@ -70,14 +82,20 @@
                             <span class="status-badge @o.Status.ToLower()">@o.Status</span>
                         </div>
                         <div class="order-timeline">
-                            @{ var steps = new[]{"Pending","Processing","Shipped","Delivered"}; var ci = Array.IndexOf(steps, o.Status); }
-                            @for(int i=0;i<steps.Length;i++)
+                            @{
+                                var steps = new[] { "Pending", "Processing", "Shipped", "Delivered" }; var ci = Array.IndexOf(steps, o.Status);
+                            }
+                            @for (int i = 0; i < steps.Length; i++)
                             {
-                                <div class="tl-step @(i<ci?"done":i==ci?"active":"")">
-                                    <div class="tl-dot"><i class="fas @(i<ci?"fa-check":i==ci?"fa-circle":"fa-circle")"></i></div>
+                                <div class="tl-step @(i < ci ? "done" : i == ci ? "active" : "")">
+                                    <div class="tl-dot"><i class="fas @(i < ci ? "fa-check" : i == ci ? "fa-circle" : "fa-circle")"></i></div>
                                     <span>@steps[i]</span>
                                 </div>
-                                if(i<steps.Length-1){<div class="tl-line @(i<ci?"done":"")"></div>}
+                                if (i < steps.Length - 1)
+                                {
+
+                                    <div class="tl-line @(i < ci ? "done" : "")"></div>
+                                }
                             }
                         </div>
                         @if (o.EstimatedDelivery.HasValue && o.Status != "Delivered" && o.Status != "Cancelled")
@@ -85,7 +103,10 @@
                             <p class="delivery-est"><i class="fas fa-truck"></i> Estimated Delivery: <strong>@o.EstimatedDelivery.Value.ToString("MMMM dd, yyyy")</strong></p>
                         }
                         <div class="order-items-list">
-                            @foreach (var item in o.Items) { <div class="order-item-line"><span>@item.ProductName x@item.Quantity</span><span>₱@((item.Price*item.Quantity).ToString("N2"))</span></div> }
+                            @foreach (var item in o.Items)
+                            {
+                                <div class="order-item-line"><span>@item.ProductName x@item.Quantity</span><span>₱@((item.Price * item.Quantity).ToString("N2"))</span></div>
+                            }
                         </div>
                         <div class="order-card-footer"><span><i class="fas fa-credit-card"></i> @o.PaymentMethod</span><strong>Total: ₱@o.Total.ToString("N2")</strong></div>
                     </div>
@@ -95,12 +116,26 @@
             <div id="my-listings" class="tab-panel">
                 <h3><i class="fas fa-tag"></i> My Listings</h3>
                 <a href="/Marketplace/Sell" class="btn-primary" style="margin-bottom:16px;display:inline-flex"><i class="fas fa-plus"></i> Add New Listing</a>
-                @if (!listings.Any()) { <div class="empty-state"><i class="fas fa-tag"></i><p>No listings yet. <a href="/Marketplace/Sell">Start selling!</a></p></div> }
+                @if (!listings.Any())
+                {
+                    <div class="empty-state"><i class="fas fa-tag"></i><p>No listings yet. <a href="/Marketplace/Sell">Start selling!</a></p></div>
+                }
                 <div class="product-grid">
                     @foreach (var l in listings)
                     {
                         <div class="product-card animate-up">
-                            <div class="product-img-wrap"><i class="fas fa-microchip product-placeholder-icon"></i><span class="badge-condition">@l.Condition</span></div>
+                            <div class="product-img-wrap">
+                                @if (!string.IsNullOrEmpty(l.ImageUrl) && l.ImageUrl != "/images/products/default.jpg")
+                                {
+                                    <img src="@l.ImageUrl" alt="@l.Title" class="product-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                    <div class="product-img-fallback" style="display:none"><i class="fas fa-microchip product-placeholder-icon"></i></div>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-microchip product-placeholder-icon"></i>
+                                }
+                                <span class="badge-condition">@l.Condition</span>
+                            </div>
                             <div class="product-info">
                                 <span class="product-cat">@l.Category</span>
                                 <h3>@l.Title</h3>
@@ -124,21 +159,21 @@
     </div>
 </div>
 <script>
-function showTab(id, el) {
-    event.preventDefault();
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.pnav').forEach(n=>n.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    el.classList.add('active');
-}
-function previewAvatar(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('avatarPreview').src = e.target.result;
-            document.getElementById('avatarForm').submit();
-        }
-        reader.readAsDataURL(input.files[0]);
+    function showTab(id, el) {
+        event.preventDefault();
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+        document.querySelectorAll('.pnav').forEach(n=>n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
     }
-}
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarPreview').src = e.target.result;
+                document.getElementById('avatarForm').submit();
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 </script>

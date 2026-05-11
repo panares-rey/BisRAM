@@ -26,7 +26,7 @@
         <div class="cat-grid">
             @foreach (var cat in categories)
             {
-                var icon = cat switch { "CPU"=>"fas fa-microchip","GPU"=>"fas fa-tv","RAM"=>"fas fa-memory","Storage"=>"fas fa-hdd","Motherboard"=>"fas fa-server","PSU"=>"fas fa-plug","Case"=>"fas fa-box","Cooling"=>"fas fa-fan",_=>"fas fa-cogs" };
+                var icon = cat switch { "CPU" => "fas fa-microchip", "GPU" => "fas fa-tv", "RAM" => "fas fa-memory", "Storage" => "fas fa-hdd", "Motherboard" => "fas fa-server", "PSU" => "fas fa-plug", "Case" => "fas fa-box", "Cooling" => "fas fa-fan", _ => "fas fa-cogs" };
                 <a href="/Products?category=@cat" class="cat-card"><i class="@icon"></i><span>@cat</span></a>
             }
         </div>
@@ -62,8 +62,15 @@
                         <p class="product-brand">@p.Brand</p>
                         <div class="product-footer">
                             <span class="price">&#8369;@p.Price.ToString("N2")</span>
-                            @if (p.Stock > 0) { <button class="btn-add-cart" onclick="addToCart(@p.Id, this)"><i class="fas fa-cart-plus"></i></button> }
-                            else { <span class="no-stock" style="font-size:.75rem">Out of Stock</span> }
+                            @if (p.Stock > 0)
+                            {
+                                <button class="btn-add-cart" onclick="addToCart(@p.Id, this)"><i class="fas fa-cart-plus"></i></button>
+                            }
+                            else
+                            {
+
+                                <span class="no-stock" style="font-size:.75rem">Out of Stock</span>
+                            }
                         </div>
                     </div>
                 </div>
@@ -86,8 +93,16 @@
                     <div class="product-card">
                         <a href="/Marketplace/Details/@l.Id">
                             <div class="product-img-wrap">
-                                <i class="fas fa-microchip product-placeholder-icon"></i>
-                                <span class="badge-condition @l.Condition.ToLower().Replace(" ","-")">@l.Condition</span>
+                                @if (!string.IsNullOrEmpty(l.ImageUrl) && l.ImageUrl != "/images/products/default.jpg")
+                                {
+                                    <img src="@l.ImageUrl" alt="@l.Title" class="product-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                    <div class="product-img-fallback" style="display:none"><i class="fas fa-microchip product-placeholder-icon"></i></div>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-microchip product-placeholder-icon"></i>
+                                }
+                                <span class="badge-condition @l.Condition.ToLower().Replace(" ", "-")">@l.Condition</span>
                             </div>
                         </a>
                         <div class="product-info">

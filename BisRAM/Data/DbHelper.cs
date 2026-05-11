@@ -197,7 +197,7 @@ namespace BisRAM.Data
                 // Insert each product using the SQL INSERT statement
                 foreach (var p in products)
                     conn.Execute("INSERT INTO Products (Name,Description,Category,Brand,Price,Stock,ImageUrl) VALUES (@n,@d,@c,@b,@p,@s,@i)",
-                        new { n=p.N, d=p.D, c=p.C, b=p.B, p=p.P, s=p.S, i=p.I });
+                        new { n = p.N, d = p.D, c = p.C, b = p.B, p = p.P, s = p.S, i = p.I });
             }
         }
 
@@ -206,35 +206,42 @@ namespace BisRAM.Data
         // ════════════════════════════════════════════════════════════════
 
         // Find a user by their username (used during registration to check if username is taken)
-        public User? GetUserByUsername(string username) {
+        public User? GetUserByUsername(string username)
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryOne<User>("SELECT * FROM Users WHERE Username=@u", new { u = username });
         }
 
         // Find a user by their email address (used during login and forgot password)
-        public User? GetUserByEmail(string email) {
+        public User? GetUserByEmail(string email)
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryOne<User>("SELECT * FROM Users WHERE Email=@e", new { e = email });
         }
 
         // Find a user by their numeric ID (used when loading profile, session data, etc.)
-        public User? GetUserById(int id) {
+        public User? GetUserById(int id)
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryOne<User>("SELECT * FROM Users WHERE Id=@id", new { id });
         }
 
         // Create a new user account in the database.
         // Returns true if successful, false if there was an error (e.g., duplicate email).
-        public bool CreateUser(User user) {
+        public bool CreateUser(User user)
+        {
             using var c = GetConnection(); c.Open();
-            try {
+            try
+            {
                 c.Execute("INSERT INTO Users (FullName,Username,Email,PasswordHash,Role,Phone,Region,Province,City,Barangay,ZipCode,StreetAddress,AvatarUrl) VALUES (@FullName,@Username,@Email,@PasswordHash,@Role,@Phone,@Region,@Province,@City,@Barangay,@ZipCode,@StreetAddress,@AvatarUrl)", user);
                 return true;
-            } catch { return false; } // Catch duplicate email errors etc.
+            }
+            catch { return false; } // Catch duplicate email errors etc.
         }
 
         // Get a list of ALL users (used by the admin Users page)
-        public List<User> GetAllUsers() {
+        public List<User> GetAllUsers()
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryList<User>("SELECT * FROM Users ORDER BY CreatedAt DESC");
         }
@@ -245,39 +252,44 @@ namespace BisRAM.Data
         {
             using var c = GetConnection(); c.Open();
             c.Execute("UPDATE Users SET FullName=@fn,Phone=@ph,Region=@r,Province=@pv,City=@ci,Barangay=@ba,ZipCode=@zp,StreetAddress=@st WHERE Id=@id",
-                new { fn=fullName, ph=phone, r=region, pv=province, ci=city, ba=barangay, zp=zip, st=street, id });
+                new { fn = fullName, ph = phone, r = region, pv = province, ci = city, ba = barangay, zp = zip, st = street, id });
         }
 
         // Update only the user's avatar URL (called after uploading a new profile picture)
-        public void UpdateAvatar(int id, string avatarUrl) {
+        public void UpdateAvatar(int id, string avatarUrl)
+        {
             using var c = GetConnection(); c.Open();
-            c.Execute("UPDATE Users SET AvatarUrl=@a WHERE Id=@id", new { a=avatarUrl, id });
+            c.Execute("UPDATE Users SET AvatarUrl=@a WHERE Id=@id", new { a = avatarUrl, id });
         }
 
         // Save a password reset token and its expiry time to the user's record
-        public void SetResetToken(int id, string token, DateTime expiry) {
+        public void SetResetToken(int id, string token, DateTime expiry)
+        {
             using var c = GetConnection(); c.Open();
             // Store the expiry as an ISO 8601 string (SQLite doesn't have a native DateTime type)
-            c.Execute("UPDATE Users SET ResetToken=@t,ResetTokenExpiry=@e WHERE Id=@id", new { t=token, e=expiry.ToString("o"), id });
+            c.Execute("UPDATE Users SET ResetToken=@t,ResetTokenExpiry=@e WHERE Id=@id", new { t = token, e = expiry.ToString("o"), id });
         }
 
         // Find a user by their password reset token (used to validate the reset link)
-        public User? GetUserByResetToken(string token) {
+        public User? GetUserByResetToken(string token)
+        {
             using var c = GetConnection(); c.Open();
-            return c.QueryOne<User>("SELECT * FROM Users WHERE ResetToken=@t", new { t=token });
+            return c.QueryOne<User>("SELECT * FROM Users WHERE ResetToken=@t", new { t = token });
         }
 
         // Update a user's password hash and clear the reset token (so it can't be reused)
-        public void UpdatePassword(int id, string hash) {
+        public void UpdatePassword(int id, string hash)
+        {
             using var c = GetConnection(); c.Open();
-            c.Execute("UPDATE Users SET PasswordHash=@h,ResetToken=NULL,ResetTokenExpiry=NULL WHERE Id=@id", new { h=hash, id });
+            c.Execute("UPDATE Users SET PasswordHash=@h,ResetToken=NULL,ResetTokenExpiry=NULL WHERE Id=@id", new { h = hash, id });
         }
 
         // Enable or disable a user account (admin feature)
-        public void ToggleUserActive(int id, bool active) {
+        public void ToggleUserActive(int id, bool active)
+        {
             using var c = GetConnection(); c.Open();
             // SQLite stores booleans as integers: 1=active, 0=inactive
-            c.Execute("UPDATE Users SET IsActive=@a WHERE Id=@id", new { a=active?1:0, id });
+            c.Execute("UPDATE Users SET IsActive=@a WHERE Id=@id", new { a = active ? 1 : 0, id });
         }
 
         // ════════════════════════════════════════════════════════════════
@@ -285,7 +297,8 @@ namespace BisRAM.Data
         // ════════════════════════════════════════════════════════════════
 
         // Get all products. If includeInactive is true, includes soft-deleted products (for admin).
-        public List<Product> GetAllProducts(bool includeInactive = false) {
+        public List<Product> GetAllProducts(bool includeInactive = false)
+        {
             using var c = GetConnection(); c.Open();
             // Dynamically include or exclude the WHERE clause for inactive products
             return c.QueryList<Product>($"SELECT * FROM Products {(includeInactive ? "" : "WHERE IsActive=1")} ORDER BY Name");
@@ -300,34 +313,40 @@ namespace BisRAM.Data
             var cmd = conn.CreateCommand();
 
             // Add each filter to the SQL query only if it was provided (not null/empty)
-            if (!string.IsNullOrEmpty(q)) {
+            if (!string.IsNullOrEmpty(q))
+            {
                 // Search in Name, Description, AND Brand columns with LIKE (% = wildcard)
                 sql += " AND (Name LIKE @q OR Description LIKE @q OR Brand LIKE @q)";
                 cmd.Parameters.AddWithValue("@q", $"%{q}%"); // %gpu% matches "NVIDIA GPU 4090"
             }
-            if (!string.IsNullOrEmpty(cat)) {
+            if (!string.IsNullOrEmpty(cat))
+            {
                 sql += " AND Category=@cat";
                 cmd.Parameters.AddWithValue("@cat", cat);
             }
-            if (!string.IsNullOrEmpty(brand)) {
+            if (!string.IsNullOrEmpty(brand))
+            {
                 sql += " AND Brand=@brand";
                 cmd.Parameters.AddWithValue("@brand", brand);
             }
-            if (min.HasValue) {
+            if (min.HasValue)
+            {
                 sql += " AND Price>=@min"; // Only products at or above the minimum price
                 cmd.Parameters.AddWithValue("@min", min.Value);
             }
-            if (max.HasValue) {
+            if (max.HasValue)
+            {
                 sql += " AND Price<=@max"; // Only products at or below the maximum price
                 cmd.Parameters.AddWithValue("@max", max.Value);
             }
 
             // Append the ORDER BY clause based on the chosen sort order
-            sql += sort switch {
-                "price_asc"  => " ORDER BY Price ASC",   // Cheapest first
+            sql += sort switch
+            {
+                "price_asc" => " ORDER BY Price ASC",   // Cheapest first
                 "price_desc" => " ORDER BY Price DESC",  // Most expensive first
-                "newest"     => " ORDER BY CreatedAt DESC", // Newest first
-                _            => " ORDER BY Name ASC"     // Default: alphabetical
+                "newest" => " ORDER BY CreatedAt DESC", // Newest first
+                _ => " ORDER BY Name ASC"     // Default: alphabetical
             };
 
             cmd.CommandText = sql;
@@ -335,32 +354,37 @@ namespace BisRAM.Data
         }
 
         // Get a single product by ID (used by Details page and cart validation)
-        public Product? GetProductById(int id) {
+        public Product? GetProductById(int id)
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryOne<Product>("SELECT * FROM Products WHERE Id=@id", new { id });
         }
 
         // Get a distinct list of all category names (for the filter dropdowns)
-        public List<string> GetCategories() {
+        public List<string> GetCategories()
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryScalarList<string>("SELECT DISTINCT Category FROM Products WHERE IsActive=1 ORDER BY Category");
         }
 
         // Get a distinct list of all brand names (for the filter dropdowns)
-        public List<string> GetBrands() {
+        public List<string> GetBrands()
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryScalarList<string>("SELECT DISTINCT Brand FROM Products WHERE IsActive=1 ORDER BY Brand");
         }
 
         // Get products in the same category (used for "Related Products" on the details page)
-        public List<Product> GetProductsByCategory(string cat, int limit = 8) {
+        public List<Product> GetProductsByCategory(string cat, int limit = 8)
+        {
             using var c = GetConnection(); c.Open();
-            return c.QueryList<Product>("SELECT * FROM Products WHERE Category=@c AND IsActive=1 LIMIT @l", new { c=cat, l=limit });
+            return c.QueryList<Product>("SELECT * FROM Products WHERE Category=@c AND IsActive=1 LIMIT @l", new { c = cat, l = limit });
         }
 
         // Save a product (INSERT if Id=0, UPDATE if Id>0)
         // This single method handles both creating new products and editing existing ones.
-        public void SaveProduct(Product p) {
+        public void SaveProduct(Product p)
+        {
             using var c = GetConnection(); c.Open();
             if (p.Id == 0)
                 // Id=0 means new product — INSERT a new row
@@ -371,13 +395,15 @@ namespace BisRAM.Data
         }
 
         // Soft-delete a product: set IsActive=0 so it's hidden but data is preserved
-        public void DeleteProduct(int id) {
+        public void DeleteProduct(int id)
+        {
             using var c = GetConnection(); c.Open();
             c.Execute("UPDATE Products SET IsActive=0 WHERE Id=@id", new { id });
         }
 
         // Get products with stock at or below the threshold (default 5) — for admin dashboard alerts
-        public List<Product> GetLowStockProducts(int t = 5) {
+        public List<Product> GetLowStockProducts(int t = 5)
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryList<Product>("SELECT * FROM Products WHERE Stock<=@t AND IsActive=1 ORDER BY Stock", new { t });
         }
@@ -392,20 +418,36 @@ namespace BisRAM.Data
         {
             using var c = GetConnection(); c.Open();
             // Get all cart item rows for this user
-            var items = c.QueryList<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid", new { uid=userId });
+            var items = c.QueryList<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid", new { uid = userId });
 
             foreach (var item in items)
             {
                 // If it's a store product (ProductId > 0), load the Product object
                 if (item.ProductId > 0)
-                    item.Product = c.QueryOne<Product>("SELECT * FROM Products WHERE Id=@id", new { id=item.ProductId });
+                    item.Product = c.QueryOne<Product>("SELECT * FROM Products WHERE Id=@id", new { id = item.ProductId });
 
                 // If it's a marketplace listing (ListingId is set), load the Listing object
                 if (item.ListingId.HasValue)
-                    item.Listing = c.QueryOne<Listing>("SELECT * FROM Listings WHERE Id=@id", new { id=item.ListingId.Value });
+                    item.Listing = c.QueryOne<Listing>("SELECT * FROM Listings WHERE Id=@id", new { id = item.ListingId.Value });
             }
 
             return items;
+        }
+
+        // Returns how many units of a store product the user already has in their cart (0 if none).
+        public int GetCartQuantityForProduct(int userId, int productId)
+        {
+            using var c = GetConnection(); c.Open();
+            var ex = c.QueryOne<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid AND ProductId=@pid", new { uid = userId, pid = productId });
+            return ex?.Quantity ?? 0;
+        }
+
+        // Returns how many units of a marketplace listing the user already has in their cart (0 if none).
+        public int GetCartQuantityForListing(int userId, int listingId)
+        {
+            using var c = GetConnection(); c.Open();
+            var ex = c.QueryOne<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid AND ListingId=@lid", new { uid = userId, lid = listingId });
+            return ex?.Quantity ?? 0;
         }
 
         // Add a store product to the cart.
@@ -414,54 +456,58 @@ namespace BisRAM.Data
         {
             using var c = GetConnection(); c.Open();
             // Check if this product is already in the user's cart
-            var ex = c.QueryOne<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid AND ProductId=@pid", new { uid=userId, pid=productId });
+            var ex = c.QueryOne<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid AND ProductId=@pid", new { uid = userId, pid = productId });
             if (ex != null)
                 // Already exists — add to quantity
-                c.Execute("UPDATE CartItems SET Quantity=Quantity+@q WHERE Id=@id", new { q=qty, id=ex.Id });
+                c.Execute("UPDATE CartItems SET Quantity=Quantity+@q WHERE Id=@id", new { q = qty, id = ex.Id });
             else
                 // New cart entry — INSERT a new row
-                c.Execute("INSERT INTO CartItems (UserId,ProductId,Quantity) VALUES (@uid,@pid,@q)", new { uid=userId, pid=productId, q=qty });
+                c.Execute("INSERT INTO CartItems (UserId,ProductId,Quantity) VALUES (@uid,@pid,@q)", new { uid = userId, pid = productId, q = qty });
         }
 
         // Add a marketplace listing to the cart (same logic as AddToCart but for listings)
         public void AddListingToCart(int userId, int listingId, int qty = 1)
         {
             using var c = GetConnection(); c.Open();
-            var ex = c.QueryOne<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid AND ListingId=@lid", new { uid=userId, lid=listingId });
+            var ex = c.QueryOne<CartItem>("SELECT * FROM CartItems WHERE UserId=@uid AND ListingId=@lid", new { uid = userId, lid = listingId });
             if (ex != null)
-                c.Execute("UPDATE CartItems SET Quantity=Quantity+@q WHERE Id=@id", new { q=qty, id=ex.Id });
+                c.Execute("UPDATE CartItems SET Quantity=Quantity+@q WHERE Id=@id", new { q = qty, id = ex.Id });
             else
-                c.Execute("INSERT INTO CartItems (UserId,ListingId,Quantity) VALUES (@uid,@lid,@q)", new { uid=userId, lid=listingId, q=qty });
+                c.Execute("INSERT INTO CartItems (UserId,ListingId,Quantity) VALUES (@uid,@lid,@q)", new { uid = userId, lid = listingId, q = qty });
         }
 
         // Update the quantity of a specific cart item.
         // If quantity is 0 or less, the item is removed from the cart.
-        public void UpdateCartQuantity(int cartItemId, int qty) {
+        public void UpdateCartQuantity(int cartItemId, int qty)
+        {
             using var c = GetConnection(); c.Open();
             if (qty <= 0)
-                c.Execute("DELETE FROM CartItems WHERE Id=@id", new { id=cartItemId }); // Remove item
+                c.Execute("DELETE FROM CartItems WHERE Id=@id", new { id = cartItemId }); // Remove item
             else
-                c.Execute("UPDATE CartItems SET Quantity=@q WHERE Id=@id", new { q=qty, id=cartItemId });
+                c.Execute("UPDATE CartItems SET Quantity=@q WHERE Id=@id", new { q = qty, id = cartItemId });
         }
 
         // Remove a single cart item by its ID
-        public void RemoveFromCart(int cartItemId) {
+        public void RemoveFromCart(int cartItemId)
+        {
             using var c = GetConnection(); c.Open();
-            c.Execute("DELETE FROM CartItems WHERE Id=@id", new { id=cartItemId });
+            c.Execute("DELETE FROM CartItems WHERE Id=@id", new { id = cartItemId });
         }
 
         // Remove ALL cart items for a user (called after placing an order)
-        public void ClearCart(int userId) {
+        public void ClearCart(int userId)
+        {
             using var c = GetConnection(); c.Open();
-            c.Execute("DELETE FROM CartItems WHERE UserId=@uid", new { uid=userId });
+            c.Execute("DELETE FROM CartItems WHERE UserId=@uid", new { uid = userId });
         }
 
         // Get the total number of items in a user's cart (sum of all quantities).
         // COALESCE returns 0 if there are no items (avoids null).
         // Displayed as the badge number on the cart icon in the navbar.
-        public int GetCartCount(int userId) {
+        public int GetCartCount(int userId)
+        {
             using var c = GetConnection(); c.Open();
-            return c.QueryScalar<int>("SELECT COALESCE(SUM(Quantity),0) FROM CartItems WHERE UserId=@uid", new { uid=userId });
+            return c.QueryScalar<int>("SELECT COALESCE(SUM(Quantity),0) FROM CartItems WHERE UserId=@uid", new { uid = userId });
         }
 
         // ════════════════════════════════════════════════════════════════
@@ -486,43 +532,56 @@ namespace BisRAM.Data
                 item.OrderId = orderId; // Link the item to this order
                 c.Execute("INSERT INTO OrderItems (OrderId,ProductId,ProductName,Price,Quantity) VALUES (@OrderId,@ProductId,@ProductName,@Price,@Quantity)", item);
                 // Decrease the product's stock by the quantity ordered
-                c.Execute("UPDATE Products SET Stock=Stock-@q WHERE Id=@pid", new { q=item.Quantity, pid=item.ProductId });
+                c.Execute("UPDATE Products SET Stock=Stock-@q WHERE Id=@pid", new { q = item.Quantity, pid = item.ProductId });
             }
 
             return orderId; // Return so the controller can redirect to the confirmation page
         }
 
+        // Deduct stock from a marketplace listing after a successful order.
+        // If stock reaches 0, mark the listing as "Sold" so it no longer appears as available.
+        public void DeductListingStock(int listingId, int quantity)
+        {
+            using var c = GetConnection(); c.Open();
+            c.Execute("UPDATE Listings SET Stock = MAX(0, Stock - @q) WHERE Id = @id", new { q = quantity, id = listingId });
+            c.Execute("UPDATE Listings SET Status = 'Sold' WHERE Id = @id AND Stock <= 0", new { id = listingId });
+        }
+
         // Get a single order by ID, including all its items
-        public Order? GetOrderById(int id) {
+        public Order? GetOrderById(int id)
+        {
             using var c = GetConnection(); c.Open();
             var o = c.QueryOne<Order>("SELECT * FROM Orders WHERE Id=@id", new { id });
             // Load the order items separately and attach them to the order object
-            if (o != null) o.Items = c.QueryList<OrderItem>("SELECT * FROM OrderItems WHERE OrderId=@oid", new { oid=id });
+            if (o != null) o.Items = c.QueryList<OrderItem>("SELECT * FROM OrderItems WHERE OrderId=@oid", new { oid = id });
             return o;
         }
 
         // Get all orders placed by a specific user (for the profile page order history)
-        public List<Order> GetOrdersByUser(int userId) {
+        public List<Order> GetOrdersByUser(int userId)
+        {
             using var c = GetConnection(); c.Open();
-            var orders = c.QueryList<Order>("SELECT * FROM Orders WHERE UserId=@uid ORDER BY CreatedAt DESC", new { uid=userId });
+            var orders = c.QueryList<Order>("SELECT * FROM Orders WHERE UserId=@uid ORDER BY CreatedAt DESC", new { uid = userId });
             // Load items for each order
-            foreach (var o in orders) o.Items = c.QueryList<OrderItem>("SELECT * FROM OrderItems WHERE OrderId=@oid", new { oid=o.Id });
+            foreach (var o in orders) o.Items = c.QueryList<OrderItem>("SELECT * FROM OrderItems WHERE OrderId=@oid", new { oid = o.Id });
             return orders;
         }
 
         // Get ALL orders from all users (for the admin orders page)
-        public List<Order> GetAllOrders() {
+        public List<Order> GetAllOrders()
+        {
             using var c = GetConnection(); c.Open();
             var orders = c.QueryList<Order>("SELECT * FROM Orders ORDER BY CreatedAt DESC");
-            foreach (var o in orders) o.Items = c.QueryList<OrderItem>("SELECT * FROM OrderItems WHERE OrderId=@oid", new { oid=o.Id });
+            foreach (var o in orders) o.Items = c.QueryList<OrderItem>("SELECT * FROM OrderItems WHERE OrderId=@oid", new { oid = o.Id });
             return orders;
         }
 
         // Update the status of an order (admin feature)
         // e.g., "Pending" → "Processing" → "Shipped" → "Delivered"
-        public void UpdateOrderStatus(int orderId, string status) {
+        public void UpdateOrderStatus(int orderId, string status)
+        {
             using var c = GetConnection(); c.Open();
-            c.Execute("UPDATE Orders SET Status=@s WHERE Id=@id", new { s=status, id=orderId });
+            c.Execute("UPDATE Orders SET Status=@s WHERE Id=@id", new { s = status, id = orderId });
         }
 
         // ════════════════════════════════════════════════════════════════
@@ -550,19 +609,22 @@ namespace BisRAM.Data
         }
 
         // Get a single listing by ID
-        public Listing? GetListingById(int id) {
+        public Listing? GetListingById(int id)
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryOne<Listing>("SELECT * FROM Listings WHERE Id=@id", new { id });
         }
 
         // Get all listings posted by a specific seller (for the profile page)
-        public List<Listing> GetListingsBySeller(int sellerId) {
+        public List<Listing> GetListingsBySeller(int sellerId)
+        {
             using var c = GetConnection(); c.Open();
-            return c.QueryList<Listing>("SELECT * FROM Listings WHERE SellerId=@sid ORDER BY CreatedAt DESC", new { sid=sellerId });
+            return c.QueryList<Listing>("SELECT * FROM Listings WHERE SellerId=@sid ORDER BY CreatedAt DESC", new { sid = sellerId });
         }
 
         // Save a listing (INSERT if Id=0, UPDATE if Id>0 — same pattern as SaveProduct)
-        public void SaveListing(Listing l) {
+        public void SaveListing(Listing l)
+        {
             using var c = GetConnection(); c.Open();
             if (l.Id == 0)
                 c.Execute("INSERT INTO Listings (SellerId,SellerName,Title,Description,Category,Condition,Price,Stock,ImageUrl,Status) VALUES (@SellerId,@SellerName,@Title,@Description,@Category,@Condition,@Price,@Stock,@ImageUrl,@Status)", l);
@@ -571,13 +633,15 @@ namespace BisRAM.Data
         }
 
         // Soft-delete a listing: set Status='Removed' (hidden but data preserved)
-        public void DeleteListing(int id) {
+        public void DeleteListing(int id)
+        {
             using var c = GetConnection(); c.Open();
             c.Execute("UPDATE Listings SET Status='Removed' WHERE Id=@id", new { id });
         }
 
         // Get ALL listings regardless of status (for the admin listings page)
-        public List<Listing> GetAllListings() {
+        public List<Listing> GetAllListings()
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryList<Listing>("SELECT * FROM Listings ORDER BY CreatedAt DESC");
         }
@@ -587,17 +651,19 @@ namespace BisRAM.Data
         // ════════════════════════════════════════════════════════════════
 
         // Save a new message to the database
-        public void SendMessage(Message m) {
+        public void SendMessage(Message m)
+        {
             using var c = GetConnection(); c.Open();
             c.Execute("INSERT INTO Messages (SenderId,ReceiverId,SenderName,ListingId,Content) VALUES (@SenderId,@ReceiverId,@SenderName,@ListingId,@Content)", m);
         }
 
         // Get all messages between two specific users, ordered by time (for the chat view)
         // This includes messages sent in BOTH directions (A→B and B→A)
-        public List<Message> GetConversation(int userId, int otherId) {
+        public List<Message> GetConversation(int userId, int otherId)
+        {
             using var c = GetConnection(); c.Open();
             return c.QueryList<Message>("SELECT * FROM Messages WHERE (SenderId=@uid AND ReceiverId=@oid) OR (SenderId=@oid AND ReceiverId=@uid) ORDER BY SentAt ASC",
-                new { uid=userId, oid=otherId });
+                new { uid = userId, oid = otherId });
         }
 
         // Build a list of unique conversations for a user (their inbox).
@@ -607,7 +673,7 @@ namespace BisRAM.Data
             using var c = GetConnection(); c.Open();
 
             // Get all messages involving this user, sorted newest first
-            var msgs = c.QueryList<Message>("SELECT * FROM Messages WHERE SenderId=@uid OR ReceiverId=@uid ORDER BY SentAt DESC", new { uid=userId });
+            var msgs = c.QueryList<Message>("SELECT * FROM Messages WHERE SenderId=@uid OR ReceiverId=@uid ORDER BY SentAt DESC", new { uid = userId });
 
             // Use a Dictionary to collect one conversation per unique other user
             // Key = the other user's ID, Value = the Conversation summary
@@ -623,7 +689,7 @@ namespace BisRAM.Data
                 if (convos.ContainsKey(otherId)) continue;
 
                 // Load the other user's profile info
-                var other = c.QueryOne<User>("SELECT * FROM Users WHERE Id=@id", new { id=otherId });
+                var other = c.QueryOne<User>("SELECT * FROM Users WHERE Id=@id", new { id = otherId });
 
                 // Build the conversation summary
                 convos[otherId] = new Conversation
@@ -636,7 +702,7 @@ namespace BisRAM.Data
                     LastMessageAt = m.SentAt,
                     // Count unread messages FROM the other person TO the current user
                     UnreadCount = c.QueryScalar<int>("SELECT COUNT(*) FROM Messages WHERE SenderId=@oid AND ReceiverId=@uid AND IsRead=0",
-                        new { oid=otherId, uid=userId }),
+                        new { oid = otherId, uid = userId }),
                     ListingId = m.ListingId
                 };
             }
@@ -645,15 +711,17 @@ namespace BisRAM.Data
         }
 
         // Mark messages from a specific sender as read (called when opening a chat)
-        public void MarkMessagesRead(int senderId, int receiverId) {
+        public void MarkMessagesRead(int senderId, int receiverId)
+        {
             using var c = GetConnection(); c.Open();
-            c.Execute("UPDATE Messages SET IsRead=1 WHERE SenderId=@sid AND ReceiverId=@rid", new { sid=senderId, rid=receiverId });
+            c.Execute("UPDATE Messages SET IsRead=1 WHERE SenderId=@sid AND ReceiverId=@rid", new { sid = senderId, rid = receiverId });
         }
 
         // Count how many unread messages a user has (for the notification badge in navbar)
-        public int GetUnreadMessageCount(int userId) {
+        public int GetUnreadMessageCount(int userId)
+        {
             using var c = GetConnection(); c.Open();
-            return c.QueryScalar<int>("SELECT COUNT(*) FROM Messages WHERE ReceiverId=@uid AND IsRead=0", new { uid=userId });
+            return c.QueryScalar<int>("SELECT COUNT(*) FROM Messages WHERE ReceiverId=@uid AND IsRead=0", new { uid = userId });
         }
 
         // ════════════════════════════════════════════════════════════════
@@ -701,7 +769,8 @@ namespace BisRAM.Data
         // Execute a SQL command that doesn't return data (INSERT, UPDATE, DELETE)
         // 'param' is an anonymous object like new { id = 5, name = "test" }
         // 'this SqliteConnection conn' means: call this as conn.Execute(...)
-        public static void Execute(this SqliteConnection conn, string sql, object? param = null) {
+        public static void Execute(this SqliteConnection conn, string sql, object? param = null)
+        {
             using var cmd = conn.CreateCommand();
             cmd.CommandText = sql;
             if (param != null) BindParams(cmd, param); // Attach the parameters to the command
@@ -710,7 +779,8 @@ namespace BisRAM.Data
 
         // Execute a SQL query that returns ONE single value (e.g., COUNT(*), SUM(), last_insert_rowid())
         // T is the return type (int, decimal, string, etc.)
-        public static T QueryScalar<T>(this SqliteConnection conn, string sql, object? param = null) {
+        public static T QueryScalar<T>(this SqliteConnection conn, string sql, object? param = null)
+        {
             using var cmd = conn.CreateCommand();
             cmd.CommandText = sql;
             if (param != null) BindParams(cmd, param);
@@ -720,13 +790,15 @@ namespace BisRAM.Data
         }
 
         // Execute a SQL query that returns a list of single values (e.g., SELECT DISTINCT Category)
-        public static List<T> QueryScalarList<T>(this SqliteConnection conn, string sql, object? param = null) {
+        public static List<T> QueryScalarList<T>(this SqliteConnection conn, string sql, object? param = null)
+        {
             using var cmd = conn.CreateCommand();
             cmd.CommandText = sql;
             if (param != null) BindParams(cmd, param);
             var list = new List<T>();
             using var reader = cmd.ExecuteReader(); // Execute and get a reader to iterate rows
-            while (reader.Read()) { // Read one row at a time
+            while (reader.Read())
+            { // Read one row at a time
                 var v = reader.GetValue(0); // Get the first (and only) column
                 if (v != null && v != DBNull.Value) list.Add((T)Convert.ChangeType(v, typeof(T)));
             }
@@ -736,7 +808,8 @@ namespace BisRAM.Data
         // Execute a SQL query that returns ONE row, mapped to an object of type T.
         // Returns null if no row was found.
         // 'where T : new()' means T must have a parameterless constructor (all models do)
-        public static T? QueryOne<T>(this SqliteConnection conn, string sql, object? param = null) where T : new() {
+        public static T? QueryOne<T>(this SqliteConnection conn, string sql, object? param = null) where T : new()
+        {
             using var cmd = conn.CreateCommand();
             cmd.CommandText = sql;
             if (param != null) BindParams(cmd, param);
@@ -745,7 +818,8 @@ namespace BisRAM.Data
         }
 
         // Execute a SQL query that returns MULTIPLE rows, each mapped to an object of type T.
-        public static List<T> QueryList<T>(this SqliteConnection conn, string sql, object? param = null) where T : new() {
+        public static List<T> QueryList<T>(this SqliteConnection conn, string sql, object? param = null) where T : new()
+        {
             using var cmd = conn.CreateCommand();
             cmd.CommandText = sql;
             if (param != null) BindParams(cmd, param);
@@ -754,7 +828,8 @@ namespace BisRAM.Data
 
         // Reads all rows from an already-configured command and maps them to a list of T.
         // Separated so it can also be called directly on a SqliteCommand (used in SearchProducts).
-        public static List<T> ReadList<T>(this SqliteCommand cmd) where T : new() {
+        public static List<T> ReadList<T>(this SqliteCommand cmd) where T : new()
+        {
             var list = new List<T>();
             using var r = cmd.ExecuteReader();
             while (r.Read()) list.Add(Map<T>(r)); // Map each row to a T object
@@ -803,7 +878,8 @@ namespace BisRAM.Data
         // Binds named parameters from an anonymous object to a SQL command.
         // Example: new { id = 5, name = "test" } adds @id=5 and @name="test" to the command.
         // This PREVENTS SQL injection attacks by never concatenating user input into SQL strings.
-        private static void BindParams(SqliteCommand cmd, object param) {
+        private static void BindParams(SqliteCommand cmd, object param)
+        {
             foreach (var p in param.GetType().GetProperties())
                 // Add each property as a named SQL parameter (e.g., @id, @name)
                 cmd.Parameters.AddWithValue("@" + p.Name, p.GetValue(param) ?? DBNull.Value);

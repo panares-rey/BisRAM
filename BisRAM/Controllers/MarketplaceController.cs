@@ -166,6 +166,11 @@ namespace BisRAM.Controllers
             if (listing == null || listing.Stock < quantity)
                 return Json(new { success = false, message = "Item not available." });
 
+            // Check how many the user already has in cart — don't allow exceeding stock
+            var alreadyInCart = _db.GetCartQuantityForListing(UserId.Value, listingId);
+            if (alreadyInCart + quantity > listing.Stock)
+                return Json(new { success = false, message = $"Only {listing.Stock} available. You already have {alreadyInCart} in your cart." });
+
             // Prevent sellers from buying their own listings
             if (listing.SellerId == UserId.Value)
                 return Json(new { success = false, message = "You cannot buy your own listing." });

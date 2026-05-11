@@ -4,7 +4,7 @@
 @model List<BisRAM.Models.CartItem>
 @{
     ViewBag.Title = "My Cart";
-    decimal total = Model.Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
+    decimal total = Model.Sum(i => (i.Product?.Price ?? i.Listing?.Price ?? 0) * i.Quantity);
 }
 
 <div class="container">
@@ -32,15 +32,21 @@
 
                 @foreach (var item in Model)
                 {
+                    var name = item.Product?.Name ?? item.Listing?.Title ?? "";
+                    var price = item.Product?.Price ?? item.Listing?.Price ?? 0;
+                    var brand = item.Product?.Brand ?? "";
+                    var category = item.Product?.Category ?? item.Listing?.Category ?? "";
+                    var detailsLink = item.Product != null ? $"/Products/Details/{item.ProductId}" : $"/Marketplace/Details/{item.ListingId}";
+                    
                     <div class="cart-row">
                         <div class="cart-product">
                             <div class="cart-img"><i class="fas fa-microchip"></i></div>
                             <div>
-                                <a href="/Products/Details/@item.ProductId">@item.Product?.Name</a>
-                                <p>@item.Product?.Brand — @item.Product?.Category</p>
+                                <a href="@detailsLink">@name</a>
+                                <p>@brand@(string.IsNullOrEmpty(brand) ? "" : " — ")@category</p>
                             </div>
                         </div>
-                        <span class="cart-price">₱@item.Product?.Price.ToString("N2")</span>
+                        <span class="cart-price">₱@price.ToString("N2")</span>
                         <form asp-action="UpdateQuantity" method="post" class="qty-form">
                             <input type="hidden" name="cartItemId" value="@item.Id" />
                             <div class="qty-selector small">
@@ -49,7 +55,7 @@
                                 <button type="submit" name="quantity" value="@(item.Quantity + 1)">+</button>
                             </div>
                         </form>
-                        <span class="cart-subtotal">₱@(((item.Product?.Price ?? 0) * item.Quantity).ToString("N2"))</span>
+                        <span class="cart-subtotal">₱@((price * item.Quantity).ToString("N2"))</span>
                         <form asp-action="Remove" method="post">
                             <input type="hidden" name="cartItemId" value="@item.Id" />
                             <button type="submit" class="btn-remove"><i class="fas fa-trash"></i></button>

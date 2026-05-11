@@ -53,6 +53,11 @@ namespace BisRAM.Controllers
             if (product == null || product.Stock < quantity)
                 return Json(new { success = false, message = "Product not available." });
 
+            // Check how many the user already has in cart — don't allow exceeding stock
+            var alreadyInCart = _db.GetCartQuantityForProduct(UserId.Value, productId);
+            if (alreadyInCart + quantity > product.Stock)
+                return Json(new { success = false, message = $"Only {product.Stock} available. You already have {alreadyInCart} in your cart." });
+
             // Add the item to the cart (or increase quantity if already in cart)
             _db.AddToCart(UserId.Value, productId, quantity);
 
@@ -169,6 +174,12 @@ namespace BisRAM.Controllers
 
             // Save the order to the database (also reduces product stock)
             var orderId = _db.CreateOrder(order);
+
+            // Deduct stock for any marketplace listing items in this order
+            foreach (var item in items.Where(i => i.ListingId.HasValue))
+            {
+                _db.DeductListingStock(item.ListingId!.Value, item.Quantity);
+            }
 
             // Clear the user's cart now that the order has been placed
             _db.ClearCart(UserId.Value);
