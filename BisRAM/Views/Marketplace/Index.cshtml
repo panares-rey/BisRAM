@@ -74,8 +74,15 @@
                     <div class="product-card animate-up">
                         <a href="/Marketplace/Details/@l.Id">
                             <div class="product-img-wrap">
-                                <i class="fas fa-microchip product-placeholder-icon"></i>
-                                <span class="badge-condition @l.Condition.ToLower().Replace(" ","-")">@l.Condition</span>
+                                @if (!string.IsNullOrEmpty(l.ImageUrl) && l.ImageUrl != "/images/products/default.jpg")
+                                {
+                                    <img src="@l.ImageUrl" alt="@l.Title" class="product-img" style="width:100%;height:100%;object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <i class="fas fa-microchip product-placeholder-icon"></i>
+                                }
+                                <span class="badge-condition ...">@l.Condition</span>
                             </div>
                         </a>
                         <div class="product-info">
