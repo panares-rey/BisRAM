@@ -98,8 +98,9 @@
                 <ul>
                     <li id="r1"><i class="fas fa-circle"></i> 8+ characters</li>
                     <li id="r2"><i class="fas fa-circle"></i> Uppercase letter</li>
-                    <li id="r3"><i class="fas fa-circle"></i> Number</li>
-                    <li id="r4"><i class="fas fa-circle"></i> Special char (!#$%)</li>
+                    <li id="r3"><i class="fas fa-circle"></i> Lowercase letter</li>
+                    <li id="r4"><i class="fas fa-circle"></i> Number</li>
+                    <li id="r5"><i class="fas fa-circle"></i> Special char (@@!#$%)</li>
                 </ul>
             </div>
             <button type="submit" class="btn-primary btn-block"><i class="fas fa-user-plus"></i> Create Account</button>
@@ -118,7 +119,8 @@ document.getElementById('pwd').addEventListener('input', function () {
     var v = this.value;
     document.getElementById('r1').className = v.length >= 8 ? 'met' : '';
     document.getElementById('r2').className = /[A-Z]/.test(v) ? 'met' : '';
-    document.getElementById('r3').className = /[0-9]/.test(v) ? 'met' : '';
-    document.getElementById('r4').className = /[!#$%^&*]/.test(v) ? 'met' : '';
+    document.getElementById('r3').className = /[a-z]/.test(v) ? 'met' : '';
+    document.getElementById('r4').className = /[0-9]/.test(v) ? 'met' : '';
+    document.getElementById('r5').className = /[@@!#$%^&*]/.test(v) ? 'met' : '';
 });
 </script>
