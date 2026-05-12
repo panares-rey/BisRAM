@@ -595,8 +595,8 @@ namespace BisRAM.Data
             var sql = "SELECT * FROM Listings WHERE Status='Active'"; // Only show active listings
             var cmd = conn.CreateCommand();
 
-            // Text search across Title and Description
-            if (!string.IsNullOrEmpty(q)) { sql += " AND (Title LIKE @q OR Description LIKE @q)"; cmd.Parameters.AddWithValue("@q", $"%{q}%"); }
+            // Text search across Title, Description, and Condition
+            if (!string.IsNullOrEmpty(q)) { sql += " AND (Title LIKE @q OR Description LIKE @q OR Condition LIKE @q)"; cmd.Parameters.AddWithValue("@q", $"%{q}%"); }
             if (!string.IsNullOrEmpty(cat)) { sql += " AND Category=@cat"; cmd.Parameters.AddWithValue("@cat", cat); }
             // Condition filter (e.g., "Used", "Like New")
             if (!string.IsNullOrEmpty(cond)) { sql += " AND Condition=@cond"; cmd.Parameters.AddWithValue("@cond", cond); }
